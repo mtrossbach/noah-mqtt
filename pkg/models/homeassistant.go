@@ -5,6 +5,7 @@ type HomeAssistantSensor struct {
 	Icon              string              `json:"icon,omitempty"`
 	DeviceClass       string              `json:"device_class"`
 	StateTopic        string              `json:"state_topic"`
+	StateClass        string              `json:"state_class"`
 	UnitOfMeasurement string              `json:"unit_of_measurement"`
 	ValueTemplate     string              `json:"value_template"`
 	UniqueId          string              `json:"unique_id"`

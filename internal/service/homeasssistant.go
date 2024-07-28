@@ -24,6 +24,7 @@ func SendDiscovery(mqttClient mqtt.Client, cfg config.HomeAssistant, sensorTopic
 	sendDiscoveryMessage(mqttClient, topic, models.HomeAssistantSensor{
 		Name:              "Output Power",
 		DeviceClass:       "power",
+		StateClass:        "measurement",
 		StateTopic:        sensorTopic,
 		UnitOfMeasurement: "W",
 		ValueTemplate:     "{{ value_json.output_w }}",
@@ -35,6 +36,7 @@ func SendDiscovery(mqttClient mqtt.Client, cfg config.HomeAssistant, sensorTopic
 		Name:              "Solar Power",
 		Icon:              "mdi:solar-power",
 		DeviceClass:       "power",
+		StateClass:        "measurement",
 		StateTopic:        sensorTopic,
 		UnitOfMeasurement: "W",
 		ValueTemplate:     "{{ value_json.solar_w }}",
@@ -46,6 +48,7 @@ func SendDiscovery(mqttClient mqtt.Client, cfg config.HomeAssistant, sensorTopic
 		Name:              "Charging Power",
 		Icon:              "mdi:battery-plus",
 		DeviceClass:       "power",
+		StateClass:        "measurement",
 		StateTopic:        sensorTopic,
 		UnitOfMeasurement: "W",
 		ValueTemplate:     "{{ value_json.charge_w }}",
@@ -57,6 +60,7 @@ func SendDiscovery(mqttClient mqtt.Client, cfg config.HomeAssistant, sensorTopic
 		Name:              "Discharge Power",
 		Icon:              "mdi:battery-minus",
 		DeviceClass:       "power",
+		StateClass:        "measurement",
 		StateTopic:        sensorTopic,
 		UnitOfMeasurement: "W",
 		ValueTemplate:     "{{ value_json.discharge_w }}",
@@ -67,6 +71,7 @@ func SendDiscovery(mqttClient mqtt.Client, cfg config.HomeAssistant, sensorTopic
 	sendDiscoveryMessage(mqttClient, topic, models.HomeAssistantSensor{
 		Name:              "Generation Total",
 		DeviceClass:       "energy",
+		StateClass:        "total_increasing",
 		StateTopic:        sensorTopic,
 		UnitOfMeasurement: "kWh",
 		ValueTemplate:     "{{ value_json.generation_total_kwh }}",
@@ -77,6 +82,7 @@ func SendDiscovery(mqttClient mqtt.Client, cfg config.HomeAssistant, sensorTopic
 	sendDiscoveryMessage(mqttClient, topic, models.HomeAssistantSensor{
 		Name:              "Generation Today",
 		DeviceClass:       "energy",
+		StateClass:        "total_increasing",
 		StateTopic:        sensorTopic,
 		UnitOfMeasurement: "kWh",
 		ValueTemplate:     "{{ value_json.generation_today_kwh }}",
@@ -87,6 +93,7 @@ func SendDiscovery(mqttClient mqtt.Client, cfg config.HomeAssistant, sensorTopic
 	sendDiscoveryMessage(mqttClient, topic, models.HomeAssistantSensor{
 		Name:              "SoC",
 		DeviceClass:       "battery",
+		StateClass:        "measurement",
 		StateTopic:        sensorTopic,
 		UnitOfMeasurement: "%",
 		ValueTemplate:     "{{ value_json.soc }}",
