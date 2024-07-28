@@ -3,7 +3,6 @@ package growatt
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/lestrrat-go/backoff/v2"
 	"io"
 	"log/slog"
 	"net/http"
@@ -14,13 +13,12 @@ import (
 )
 
 type Client struct {
-	client       *http.Client
-	username     string
-	password     string
-	userAgent    string
-	userId       string
-	jar          *cookiejar.Jar
-	loginBackoff backoff.Policy
+	client    *http.Client
+	username  string
+	password  string
+	userAgent string
+	userId    string
+	jar       *cookiejar.Jar
 }
 
 func NewClient(username string, password string) *Client {
@@ -39,11 +37,6 @@ func NewClient(username string, password string) *Client {
 		username: username,
 		password: hashPassword(password),
 		jar:      jar,
-		loginBackoff: backoff.Exponential(
-			backoff.WithMinInterval(10*time.Second),
-			backoff.WithMaxInterval(10*time.Minute),
-			backoff.WithJitterFactor(0.05),
-		),
 	}
 }
 
