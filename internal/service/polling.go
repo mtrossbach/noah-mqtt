@@ -14,22 +14,59 @@ func Start() {
 	connectMqtt(config.Get().Mqtt)
 }
 
+func fetchSerialNumbers(client *growatt.Client) []string {
+	list, err := client.GetPlantList()
+	if err != nil {
+		slog.Error("could not get plant list", slog.String("error", err.Error()))
+		panic(err)
+	}
+
+	var serialNumbers []string
+
+	for _, plant := range list.Back.Data {
+		if info, err := client.GetNoahPlantInfo(plant.PlantID); err != nil {
+			slog.Error("could not get plant info", slog.String("plantId", plant.PlantID), slog.String("error", err.Error()))
+		} else {
+			if len(info.Obj.DeviceSn) > 0 {
+				serialNumbers = append(serialNumbers, info.Obj.DeviceSn)
+				slog.Info("found device sn", slog.String("deviceSn", info.Obj.DeviceSn), slog.String("plantId", plant.PlantID))
+			}
+		}
+	}
+
+	return serialNumbers
+}
+
 func poll(mqttClient mqtt.Client) {
 	cfg := config.Get()
 	if len(cfg.Growatt.Username) == 0 || len(cfg.Growatt.Password) == 0 {
 		panic("growatt username or password is empty")
 	}
 	client := growatt.NewClient(cfg.Growatt.Username, cfg.Growatt.Password)
-	slog.Info("start polling growatt", slog.String("username", cfg.Growatt.Username), slog.String("serialNumber", cfg.Growatt.SerialNumber))
-	for {
-		if data, err := client.GetNoahStatus(cfg.Growatt.SerialNumber); err != nil {
-			slog.Error("could not get data", slog.String("error", err.Error()))
+	slog.Info("start polling growatt", slog.String("username", cfg.Growatt.Username))
+	_ = client.Login()
+
+	serialNumbers := fetchSerialNumbers(client)
+	for _, serialNumber := range serialNumbers {
+		if data, err := client.GetNoahStatus(serialNumber); err != nil {
+			slog.Error("could not get data", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
 		} else {
-			if b, err := json.Marshal(data.ToPayload()); err != nil {
-				slog.Error("could not marshal data", slog.String("error", err.Error()))
+			sensorTopic := fmt.Sprintf("%s/%s", cfg.Mqtt.TopicPrefix, serialNumber)
+			SendDiscovery(mqttClient, cfg.HomeAssistant, sensorTopic, data.Obj.Alias, serialNumber)
+		}
+	}
+
+	for {
+		for _, serialNumber := range serialNumbers {
+			if data, err := client.GetNoahStatus(serialNumber); err != nil {
+				slog.Error("could not get data", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
 			} else {
-				mqttClient.Publish(cfg.Mqtt.Topic, 1, true, string(b))
-				slog.Info("publish data", slog.String("data", string(b)), slog.String("topic", cfg.Mqtt.Topic))
+				if b, err := json.Marshal(data.ToPayload()); err != nil {
+					slog.Error("could not marshal data", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
+				} else {
+					mqttClient.Publish(fmt.Sprintf("%s/%s", cfg.Mqtt.TopicPrefix, serialNumber), 1, true, string(b))
+					slog.Info("publish data", slog.String("data", string(b)), slog.String("topic", cfg.Mqtt.TopicPrefix), slog.String("serialNumber", serialNumber))
+				}
 			}
 		}
 

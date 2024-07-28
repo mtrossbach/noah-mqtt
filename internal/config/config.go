@@ -12,22 +12,25 @@ type Config struct {
 	PollingInterval time.Duration
 	Growatt         Growatt
 	Mqtt            Mqtt
+	HomeAssistant   HomeAssistant
 }
 
 type Growatt struct {
-	Username     string
-	Password     string
-	SerialNumber string
-	PlantId      string
+	Username string
+	Password string
 }
 
 type Mqtt struct {
-	Host     string
-	Port     int
-	ClientId string
-	Username string
-	Password string
-	Topic    string
+	Host        string
+	Port        int
+	ClientId    string
+	Username    string
+	Password    string
+	TopicPrefix string
+}
+
+type HomeAssistant struct {
+	TopicPrefix string
 }
 
 var _config Config
@@ -39,18 +42,19 @@ func Get() Config {
 			Version:         getEnv("VERSION", "local"),
 			PollingInterval: time.Duration(s2i(getEnv("POLLING_INTERVAL", "10"))) * time.Second,
 			Growatt: Growatt{
-				Username:     getEnv("GROWATT_USERNAME", ""),
-				Password:     getEnv("GROWATT_PASSWORD", ""),
-				SerialNumber: getEnv("GROWATT_SERIAL_NUMBER", ""),
-				PlantId:      getEnv("GROWATT_PLANT_ID", ""),
+				Username: getEnv("GROWATT_USERNAME", ""),
+				Password: getEnv("GROWATT_PASSWORD", ""),
 			},
 			Mqtt: Mqtt{
-				Host:     getEnv("MQTT_HOST", "localhost"),
-				Port:     s2i(getEnv("MQTT_PORT", "1883")),
-				ClientId: getEnv("MQTT_CLIENT_ID", "noah-mqtt"),
-				Username: getEnv("MQTT_USERNAME", ""),
-				Password: getEnv("MQTT_PASSWORD", ""),
-				Topic:    getEnv("MQTT_TOPIC", "home/sensor/noah"),
+				Host:        getEnv("MQTT_HOST", "localhost"),
+				Port:        s2i(getEnv("MQTT_PORT", "1883")),
+				ClientId:    getEnv("MQTT_CLIENT_ID", "noah-mqtt"),
+				Username:    getEnv("MQTT_USERNAME", ""),
+				Password:    getEnv("MQTT_PASSWORD", ""),
+				TopicPrefix: getEnv("MQTT_TOPIC_PREFIX", "noah2mqtt"),
+			},
+			HomeAssistant: HomeAssistant{
+				TopicPrefix: getEnv("HOMEASSISTANT_TOPIC_PREFIX", "homeassistant"),
 			},
 		}
 	})

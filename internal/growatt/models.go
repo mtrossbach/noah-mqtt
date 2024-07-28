@@ -9,7 +9,31 @@ type LoginResult struct {
 	Back struct {
 		Msg     string `json:"msg"`
 		Success bool   `json:"success"`
+		User    struct {
+			ID int `json:"id"`
+		} `json:"user"`
 	} `json:"back"`
+}
+
+type PlantList struct {
+	Back struct {
+		Data []struct {
+			PlantID string `json:"plantId"`
+		} `json:"data"`
+		Success bool `json:"success"`
+	} `json:"back"`
+}
+
+type NoahPlantInfo struct {
+	Msg    string `json:"msg"`
+	Result int    `json:"result"`
+	Obj    struct {
+		IsPlantNoahSystem bool   `json:"isPlantNoahSystem"`
+		PlantID           string `json:"plantId"`
+		IsPlantHaveNoah   bool   `json:"isPlantHaveNoah"`
+		DeviceSn          string `json:"deviceSn"`
+		PlantName         string `json:"plantName"`
+	} `json:"obj"`
 }
 
 type NoahStatus struct {
