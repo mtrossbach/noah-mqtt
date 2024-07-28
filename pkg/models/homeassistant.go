@@ -2,7 +2,7 @@ package models
 
 type HomeAssistantSensor struct {
 	Name              string              `json:"name"`
-	Icon              string              `json:"icon"`
+	Icon              string              `json:"icon,omitempty"`
 	DeviceClass       string              `json:"device_class"`
 	StateTopic        string              `json:"state_topic"`
 	UnitOfMeasurement string              `json:"unit_of_measurement"`
