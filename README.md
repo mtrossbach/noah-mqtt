@@ -1,9 +1,13 @@
 # noah-mqtt
 ![License](https://img.shields.io/github/license/mtrossbach/noah-mqtt) ![GitHub last commit](https://img.shields.io/github/last-commit/mtrossbach/noah-mqtt) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/mtrossbach/noah-mqtt)
 
-Polls and publishes data and metrics of the Growatt Noah battery for balcony power plants to MQTT for Home Assistant
-
 UNDER CONSTRUCTION!
+
+Fetches data and metrics of your Growatt Noah 2000 home battery for balcony power plants and publishes it to MQTT to be consumed in Home Assistant or other applications.
+The application supports Home Assistant auto-discovery, so your Noah devices should appear automatically.
+
+# ![HomeAssistant screenshot](/assets/ha-screenshot.png)
+
 
 # Run with docker
 
