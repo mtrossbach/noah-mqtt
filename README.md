@@ -17,7 +17,7 @@ To run the latest version make sure you have `Docker` installed. Execute the fol
 docker run --name noah-mqtt -e GROWATT_USERNAME=myusername -e GROWATT_PASSWORD=mypassword -e MQTT_HOST=localhost -e MQTT_PORT=1883 ghcr.io/mtrossbach/noah-mqtt:latest
 ```
 
-Provide values for `GROWATT_USERNAME`, `GROWATT_PASSWORD`, `MQTT_HOST`, `MQTT_HOST`. The application will then connect to your MQTT broker and fetch all metrics and data for all your Noah devices in your account.
+Provide values for `GROWATT_USERNAME`, `GROWATT_PASSWORD`, `MQTT_HOST`, `MQTT_PORT`. The application will then connect to your MQTT broker and fetch all metrics and data for all your Noah devices in your account.
 
 # Build and Run
 
@@ -33,7 +33,7 @@ Don't forget to specify your configuration using the environment variables when 
 GROWATT_USERNAME=username GROWATT_PASSWORD=mypassword MQTT_HOST=localhost MQTT_PORT=1883 ./noah-mqtt
 ```
 
-Provide values for `GROWATT_USERNAME`, `GROWATT_PASSWORD`, `MQTT_HOST`, `MQTT_HOST`. The application will then connect to your MQTT broker and fetch all metrics and data for all your Noah devices in your account.
+Provide values for `GROWATT_USERNAME`, `GROWATT_PASSWORD`, `MQTT_HOST`, `MQTT_PORT`. The application will then connect to your MQTT broker and fetch all metrics and data for all your Noah devices in your account.
 
 
 # Configuration
