@@ -64,10 +64,7 @@ func (h *Client) Login() error {
 	}
 
 	if resp.StatusCode != 200 || !data.Back.Success {
-		slog.Error("login failed", slog.String("data", string(b)))
-		slog.Info("waiting before exiting")
-		<-time.After(60 * time.Second)
-		panic("login failed")
+		return fmt.Errorf("login failed: %s", string(b))
 	}
 
 	h.userId = fmt.Sprintf("%d", data.Back.User.ID)
@@ -161,7 +158,8 @@ func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 	if err := json.Unmarshal(b, &data); err != nil {
 		if strings.Contains(err.Error(), "invalid character '<' looking for beginning of value") {
 			if err := h.Login(); err != nil {
-				return nil, err
+				<-time.After(60 * time.Second)
+				panic(err)
 			}
 			return h.GetNoahStatus(serialNumber)
 		} else {

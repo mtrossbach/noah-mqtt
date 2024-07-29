@@ -1,5 +1,12 @@
 package models
 
+type WorkMode string
+
+const (
+	WorkModeLoadFirst    = "load_first"
+	WorkModeBatteryFirst = "battery_first"
+)
+
 type Payload struct {
 	OutputPower           float64  `json:"output_w"`
 	SolarPower            float64  `json:"solar_w"`
