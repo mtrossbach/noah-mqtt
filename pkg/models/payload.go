@@ -6,7 +6,7 @@ type Payload struct {
 	Soc                   float64  `json:"soc"`
 	ChargePower           float64  `json:"charge_w"`
 	DischargePower        float64  `json:"discharge_w"`
-	BatteryCount          int      `json:"battery_count"`
+	BatteryNum            int      `json:"battery_num"`
 	GenerationTotalEnergy float64  `json:"generation_total_kwh"`
 	GenerationTodayEnergy float64  `json:"generation_today_kwh"`
 	WorkMode              WorkMode `json:"work_mode"`

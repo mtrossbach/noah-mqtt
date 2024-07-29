@@ -66,7 +66,7 @@ func (n *NoahStatus) ToPayload() models.Payload {
 		Soc:                   parseFloat(n.Obj.Soc),
 		ChargePower:           parseFloat(n.Obj.ChargePower),
 		DischargePower:        parseFloat(n.Obj.DisChargePower),
-		BatteryCount:          int(parseFloat(n.Obj.BatteryNum)),
+		BatteryNum:            int(parseFloat(n.Obj.BatteryNum)),
 		GenerationTotalEnergy: parseFloat(n.Obj.EacTotal),
 		GenerationTodayEnergy: parseFloat(n.Obj.EacToday),
 		WorkMode:              workModeFromString(n.Obj.WorkMode),
