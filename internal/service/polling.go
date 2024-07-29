@@ -41,9 +41,6 @@ func fetchSerialNumbers(client *growatt.Client) []string {
 
 func poll(mqttClient mqtt.Client) {
 	cfg := config.Get()
-	if len(cfg.Growatt.Username) == 0 || len(cfg.Growatt.Password) == 0 {
-		panic("growatt username or password is empty")
-	}
 	client := growatt.NewClient(cfg.Growatt.Username, cfg.Growatt.Password)
 	slog.Info("logging in to growatt", slog.String("username", cfg.Growatt.Username))
 	_ = client.Login()

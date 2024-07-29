@@ -14,6 +14,9 @@ import (
 func main() {
 	cfg := config.Get()
 	logging.Init(cfg.LogLevel)
+	if err := config.Validate(); err != nil {
+		panic(err)
+	}
 
 	slog.Info("noah-mqtt started", slog.String("version", cfg.Version))
 

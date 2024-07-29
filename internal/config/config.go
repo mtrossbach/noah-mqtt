@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"strconv"
 	"sync"
@@ -48,7 +49,7 @@ func Get() Config {
 				Password: getEnv("GROWATT_PASSWORD", ""),
 			},
 			Mqtt: Mqtt{
-				Host:        getEnv("MQTT_HOST", "localhost"),
+				Host:        getEnv("MQTT_HOST", ""),
 				Port:        s2i(getEnv("MQTT_PORT", "1883")),
 				ClientId:    getEnv("MQTT_CLIENT_ID", "noah-mqtt"),
 				Username:    getEnv("MQTT_USERNAME", ""),
@@ -61,6 +62,19 @@ func Get() Config {
 		}
 	})
 	return _config
+}
+
+func Validate() error {
+	if len(Get().Mqtt.Host) == 0 {
+		return errors.New("MQTT_HOST is required")
+	}
+	if len(Get().Growatt.Username) == 0 {
+		return errors.New("GROWATT_USERNAME is required")
+	}
+	if len(Get().Growatt.Password) == 0 {
+		return errors.New("GROWATT_PASSWORD is required")
+	}
+	return nil
 }
 
 func getEnv(key, fallback string) string {
