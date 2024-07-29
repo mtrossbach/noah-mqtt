@@ -6,12 +6,18 @@ import (
 	"noah-mqtt/internal/service"
 	"os"
 	"os/signal"
+	"os/user"
 	"syscall"
 )
 
 func main() {
 	cfg := config.Get()
 	slog.Info("noah-mqtt started", slog.String("version", cfg.Version))
+
+	if currentUser, err := user.Current(); err == nil {
+		slog.Info("running as", slog.String("username", currentUser.Username), slog.String("uid", currentUser.Uid))
+	}
+
 	service.Start()
 
 	cancelChan := make(chan os.Signal, 1)
