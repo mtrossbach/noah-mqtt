@@ -15,6 +15,7 @@ builds:
 archives:
   - files:
     - LICENSE
+    - passwd
 checksum:
   name_template: 'checksums.txt'
 
@@ -37,6 +38,7 @@ dockers:
       - &arm64v8_image "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}-arm64v8"
     extra_files:
       - LICENSE
+      - passwd
   - use: buildx
     goos: linux
     goarch: arm
@@ -56,6 +58,7 @@ dockers:
       - &armv6_image "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}-armv6"
     extra_files:
       - LICENSE
+      - passwd
   - use: buildx
     goos: linux
     goarch: amd64
@@ -74,6 +77,7 @@ dockers:
       - &amd64_image "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}-amd64"
     extra_files:
       - LICENSE
+      - passwd
       
 docker_manifests:
   - name_template: "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}"
