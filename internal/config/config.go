@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Version         string
+	LogLevel        string
 	PollingInterval time.Duration
 	Growatt         Growatt
 	Mqtt            Mqtt
@@ -40,6 +41,7 @@ func Get() Config {
 	_once.Do(func() {
 		_config = Config{
 			Version:         getEnv("VERSION", "local"),
+			LogLevel:        getEnv("LOG_LEVEL", "info"),
 			PollingInterval: time.Duration(s2i(getEnv("POLLING_INTERVAL", "10"))) * time.Second,
 			Growatt: Growatt{
 				Username: getEnv("GROWATT_USERNAME", ""),

@@ -15,6 +15,7 @@ func Start() {
 }
 
 func fetchSerialNumbers(client *growatt.Client) []string {
+	slog.Info("fetching plant list")
 	list, err := client.GetPlantList()
 	if err != nil {
 		slog.Error("could not get plant list", slog.String("error", err.Error()))
@@ -24,6 +25,7 @@ func fetchSerialNumbers(client *growatt.Client) []string {
 	var serialNumbers []string
 
 	for _, plant := range list.Back.Data {
+		slog.Info("fetch plant details", slog.String("plantId", plant.PlantID))
 		if info, err := client.GetNoahPlantInfo(plant.PlantID); err != nil {
 			slog.Error("could not get plant info", slog.String("plantId", plant.PlantID), slog.String("error", err.Error()))
 		} else {
@@ -43,7 +45,7 @@ func poll(mqttClient mqtt.Client) {
 		panic("growatt username or password is empty")
 	}
 	client := growatt.NewClient(cfg.Growatt.Username, cfg.Growatt.Password)
-	slog.Info("start polling growatt", slog.String("username", cfg.Growatt.Username))
+	slog.Info("logging in to growatt", slog.String("username", cfg.Growatt.Username))
 	_ = client.Login()
 
 	serialNumbers := fetchSerialNumbers(client)
@@ -56,16 +58,18 @@ func poll(mqttClient mqtt.Client) {
 		}
 	}
 
+	slog.Info("start polling growatt", slog.Int("interval", int(cfg.PollingInterval/time.Second)))
 	for {
 		for _, serialNumber := range serialNumbers {
+			valueTopic := fmt.Sprintf("%s/%s", cfg.Mqtt.TopicPrefix, serialNumber)
 			if data, err := client.GetNoahStatus(serialNumber); err != nil {
 				slog.Error("could not get data", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
 			} else {
 				if b, err := json.Marshal(data.ToPayload()); err != nil {
 					slog.Error("could not marshal data", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
 				} else {
-					mqttClient.Publish(fmt.Sprintf("%s/%s", cfg.Mqtt.TopicPrefix, serialNumber), 1, true, string(b))
-					slog.Info("publish data", slog.String("data", string(b)), slog.String("topic", cfg.Mqtt.TopicPrefix), slog.String("serialNumber", serialNumber))
+					mqttClient.Publish(valueTopic, 1, true, string(b))
+					slog.Debug("data received", slog.String("data", string(b)), slog.String("serialNumber", serialNumber))
 				}
 			}
 		}

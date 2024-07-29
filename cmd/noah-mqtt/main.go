@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"noah-mqtt/internal/config"
+	"noah-mqtt/internal/logging"
 	"noah-mqtt/internal/service"
 	"os"
 	"os/signal"
@@ -12,6 +13,8 @@ import (
 
 func main() {
 	cfg := config.Get()
+	logging.Init(cfg.LogLevel)
+
 	slog.Info("noah-mqtt started", slog.String("version", cfg.Version))
 
 	if currentUser, err := user.Current(); err == nil {

@@ -40,17 +40,18 @@ Provide values for `GROWATT_USERNAME`, `GROWATT_PASSWORD`, `MQTT_HOST`, `MQTT_PO
 
 Use the following environment variables to configure noah-mqtt:
 
-| Environment Variable | Description                                     | Default       |
-|:---------------------|:------------------------------------------------|:--------------|
-| POLLING_INTERVAL     | Interval between new data is fetched in seconds | 10            |
-| GROWATT_USERNAME     | Username for your Growatt account (required)    | -             |
-| GROWATT_PASSWORD     | Password for your Growatt account (required)    | -             |
-| MQTT_HOST            | MQTT broker host (required)                     | -             |
-| MQTT_PORT            | MQTT broker port                                | 1883          |
-| MQTT_CLIENT_ID       | MQTT client id                                  | noah-mqtt     |
-| MQTT_USERNAME        | MQTT username                                   | -             |
-| MQTT_PASSWORD        | MQTT password                                   | -             |
-| MQTT_TOPIC_PREFIX    | MQTT base topic                                 | noah2mqtt     |
-| HOMEASSISTANT_TOPIC_PREFIX    | HomeAssistant base topic                        | homeassistant |
+| Environment Variable       | Description                                     | Default       |
+|:---------------------------|:------------------------------------------------|:--------------|
+| LOG_LEVEL                  | Log-level for the application                   | INFO          |
+| POLLING_INTERVAL           | Interval between new data is fetched in seconds | 10            |
+| GROWATT_USERNAME           | Username for your Growatt account (required)    | -             |
+| GROWATT_PASSWORD           | Password for your Growatt account (required)    | -             |
+| MQTT_HOST                  | MQTT broker host (required)                     | -             |
+| MQTT_PORT                  | MQTT broker port                                | 1883          |
+| MQTT_CLIENT_ID             | MQTT client id                                  | noah-mqtt     |
+| MQTT_USERNAME              | MQTT username                                   | -             |
+| MQTT_PASSWORD              | MQTT password                                   | -             |
+| MQTT_TOPIC_PREFIX          | MQTT base topic                                 | noah2mqtt     |
+| HOMEASSISTANT_TOPIC_PREFIX | HomeAssistant base topic                        | homeassistant |
 
 
