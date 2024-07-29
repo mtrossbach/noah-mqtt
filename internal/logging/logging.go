@@ -40,7 +40,3 @@ func setLogLevel(level string) error {
 	slog.Info("set log level", slog.String("level", level))
 	return nil
 }
-
-func IsDebug() bool {
-	return logLevel.Level() == slog.LevelDebug
-}
