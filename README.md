@@ -123,20 +123,20 @@ By following these steps, Noah-mqtt will communicate with Home Assistant via you
 
 # Configuration
 
-Use the following environment variables to configure noah-mqtt:
+You can configure Noah-mqtt using the following environment variables:
 
-| Environment Variable       | Description                                     | Default       |
-|:---------------------------|:------------------------------------------------|:--------------|
-| LOG_LEVEL                  | Log-level for the application                   | INFO          |
-| POLLING_INTERVAL           | Interval between new data is fetched in seconds | 10            |
-| GROWATT_USERNAME           | Username for your Growatt account (required)    | -             |
-| GROWATT_PASSWORD           | Password for your Growatt account (required)    | -             |
-| MQTT_HOST                  | MQTT broker host (required)                     | -             |
-| MQTT_PORT                  | MQTT broker port                                | 1883          |
-| MQTT_CLIENT_ID             | MQTT client id                                  | noah-mqtt     |
-| MQTT_USERNAME              | MQTT username                                   | -             |
-| MQTT_PASSWORD              | MQTT password                                   | -             |
-| MQTT_TOPIC_PREFIX          | MQTT base topic                                 | noah2mqtt     |
-| HOMEASSISTANT_TOPIC_PREFIX | HomeAssistant base topic                        | homeassistant |
+| Environment Variable         | Description                                        | Default       |
+|:-----------------------------|:---------------------------------------------------|:--------------| 
+| `LOG_LEVEL`                  | Sets the logging level of the application          | INFO          |
+| `POLLING_INTERVAL`           | Time in seconds between fetching new data          | 10            |
+| `GROWATT_USERNAME`           | Your Growatt account username (required)           | -             |
+| `GROWATT_PASSWORD`           | Your Growatt account password (required)           | -             |
+| `MQTT_HOST`                  | Address of your MQTT broker (required)             | -             |
+| `MQTT_PORT`                  | Port number of your MQTT broker                    | 1883          |
+| `MQTT_CLIENT_ID`             | Identifier for the MQTT client                     | noah-mqtt     |
+| `MQTT_USERNAME`              | Username for connecting to your MQTT broker        | -             |
+| `MQTT_PASSWORD`              | Password for connecting to your MQTT broker        | -             |
+| `MQTT_TOPIC_PREFIX`          | Prefix for MQTT topics used by Noah-mqtt           | noah2mqtt     |
+| `HOMEASSISTANT_TOPIC_PREFIX` | Prefix for topics used by Home Assistant           | homeassistant |
 
-
+Adjust these settings to fit your environment and requirements.
