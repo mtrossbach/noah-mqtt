@@ -91,11 +91,15 @@ To compile the binary yourself, ensure you have Go installed on your machine:
 
 Afterwards follow the instructions for running the application from option 2.
 
+
 # Integration into HomeAssistant
 
-If you’re already using MQTT with other integrations like zigbee2mqtt or AhoyDTU, you might already have the MQTT integration configured and active. In this case, you can skip step 1 and 2 as your existing setup should work with Noah-mqtt.
+Noah-mqtt interacts with Home Assistant by publishing data from your Growatt Noah 2000 home battery to an MQTT broker. This setup allows Home Assistant to subscribe to and integrate this data seamlessly into its ecosystem.
 
-To integrate Noah-mqtt with Home Assistant, follow these steps:
+![Home Assistant Integration](./assets/noah-mqtt-ha-dark.drawio.png#gh-dark-mode-only)
+![Home Assistant Integration](./assets/noah-mqtt-ha.drawio.png#gh-light-mode-only)
+
+If you’re already using MQTT with other integrations like zigbee2mqtt or AhoyDTU, you already have the MQTT integration configured and active. In this case, you can skip step 1 and 2 as your existing setup should work with Noah-mqtt.
 
 1. **Set Up an MQTT Broker**:  
    Ensure you have an MQTT broker running, such as [Mosquitto](https://mosquitto.org/), and that it’s accessible from both Noah-mqtt and Home Assistant.
@@ -112,12 +116,7 @@ To integrate Noah-mqtt with Home Assistant, follow these steps:
 4. **Verify Device Discovery**:  
    Check **Devices** and **Entities** under **Settings** > **Devices & Services** in Home Assistant to confirm that your Noah devices are automatically discovered.
 
-By following these steps, Noah-mqtt will communicate with Home Assistant via your MQTT broker, also supporting automatic device discovery.
-
-If you already have MQTT set up, it should integrate seamlessly with your existing configuration.
-
-![Home Assistant Integration](./assets/noah-mqtt-ha-dark.drawio.png#gh-dark-mode-only)
-![Home Assistant Integration](./assets/noah-mqtt-ha.drawio.png#gh-light-mode-only)
+By following these steps, Noah-mqtt will communicate with Home Assistant via your MQTT broker, also supporting automatic device discovery. If you already have MQTT set up, it should integrate seamlessly with your existing configuration.
 
 
 # Configuration
