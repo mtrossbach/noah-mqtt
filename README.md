@@ -101,6 +101,8 @@ Noah-mqtt interacts with Home Assistant by publishing data from your Growatt Noa
 
 If you’re already using MQTT with other integrations like zigbee2mqtt or AhoyDTU, you already have the MQTT integration configured and active. In this case, you can skip step 1 and 2 as your existing setup should work with Noah-mqtt.
 
+The integration process for Noah-mqtt with Home Assistant is consistent, regardless of how Home Assistant is installed—whether it’s through Home Assistant OS, Home Assistant Supervised, or Home Assistant Container. 
+
 1. **Set Up an MQTT Broker**:  
    Ensure you have an MQTT broker running, such as [Mosquitto](https://mosquitto.org/), and that it’s accessible from both Noah-mqtt and Home Assistant.
 
