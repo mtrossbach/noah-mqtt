@@ -55,7 +55,7 @@ func connectMqtt(mqttCfg config.Mqtt, onConnected func(client mqtt.Client)) {
 		AddBroker(fmt.Sprintf("tcp://%s:%d", mqttCfg.Host, mqttCfg.Port)).
 		SetClientID(mqttCfg.ClientId).
 		SetUsername(mqttCfg.Username).
-		SetUsername(mqttCfg.Password)
+		SetPassword(mqttCfg.Password)
 
 	opts.OnConnect = func(client mqtt.Client) {
 		slog.Info("connected to mqtt broker")
