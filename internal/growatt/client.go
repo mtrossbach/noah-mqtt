@@ -171,6 +171,36 @@ func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 	return &data, nil
 }
 
+func (h *Client) GetNoahInfo(serialNumber string) (*NoahInfo, error) {
+	resp, err := h.postForm("https://openapi.growatt.com/noahDeviceApi/noah/getNoahInfoBySn", url.Values{
+		"deviceSn": {serialNumber},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("fetch noah status failed: %s", resp.Status)
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var data NoahInfo
+	if err := json.Unmarshal(b, &data); err != nil {
+		return nil, err
+	}
+
+	return &data, nil
+}
+
 func (h *Client) postForm(url string, data url.Values) (resp *http.Response, err error) {
 	req, err := http.NewRequest("POST", url, strings.NewReader(data.Encode()))
 	if err != nil {

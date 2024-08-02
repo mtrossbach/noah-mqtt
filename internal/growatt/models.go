@@ -53,3 +53,35 @@ type NoahStatus struct {
 		Status          string `json:"status"`
 	} `json:"obj"`
 }
+
+type NoahInfo struct {
+	Msg    string `json:"msg"`
+	Result int    `json:"result"`
+	Obj    struct {
+		Noah struct {
+			TimeSegment              []map[string]string `json:"time_segment"`
+			BatSns                   []string            `json:"batSns"`
+			ManName                  string              `json:"manName"`
+			AssociatedInvSn          string              `json:"associatedInvSn"`
+			PlantID                  string              `json:"plantId"`
+			ChargingSocHighLimit     string              `json:"chargingSocHighLimit"`
+			DefaultPower             string              `json:"defaultPower"`
+			Version                  string              `json:"version"`
+			DeviceSn                 string              `json:"deviceSn"`
+			ChargingSocLowLimit      string              `json:"chargingSocLowLimit"`
+			FormulaMoney             string              `json:"formulaMoney"`
+			ModelName                string              `json:"modelName"`
+			Alias                    string              `json:"alias"`
+			Model                    string              `json:"model"`
+			PlantName                string              `json:"plantName"`
+			AssociatedInvManAndModel int                 `json:"associatedInvManAndModel"`
+			TempType                 string              `json:"tempType"`
+			MoneyUnitText            string              `json:"moneyUnitText"`
+		} `json:"noah"`
+		PlantList []struct {
+			PlantID      string      `json:"plantId"`
+			PlantImgName interface{} `json:"plantImgName"`
+			PlantName    string      `json:"plantName"`
+		} `json:"plantList"`
+	} `json:"obj"`
+}
