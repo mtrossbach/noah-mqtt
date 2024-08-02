@@ -97,4 +97,4 @@ release:
   github:
     owner: mtrossbach
     name: noah-mqtt
-  draft: true
+  draft: false
