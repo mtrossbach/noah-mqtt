@@ -10,8 +10,7 @@ The application features Home Assistant auto-discovery, allowing your Noah devic
 
 # ![HomeAssistant screenshot](/assets/ha-screenshot.png)
 
-
-# How to run the application
+# Run the application standalone
 
 ## Option 1: Running Noah-mqtt with Docker
 
@@ -101,7 +100,7 @@ Noah-mqtt interacts with Home Assistant by publishing data from your Growatt Noa
 
 If you’re already using MQTT with other integrations like zigbee2mqtt or AhoyDTU, you already have the MQTT integration configured and active. In this case, you can skip step 1 and 2 as your existing setup should work with Noah-mqtt.
 
-The integration process for Noah-mqtt with Home Assistant is consistent, regardless of how Home Assistant is installed—whether it’s through Home Assistant OS, Home Assistant Supervised, or Home Assistant Container. 
+The following integration process for Noah-mqtt with Home Assistant works for all installation methods, regardless of how Home Assistant is installed—whether it’s through Home Assistant OS, Home Assistant Supervised, or Home Assistant Container. 
 
 1. **Set Up an MQTT Broker**:  
    Ensure you have an MQTT broker running, such as [Mosquitto](https://mosquitto.org/), and that it’s accessible from both Noah-mqtt and Home Assistant.
@@ -119,7 +118,6 @@ The integration process for Noah-mqtt with Home Assistant is consistent, regardl
    Check **Devices** and **Entities** under **Settings** > **Devices & Services** in Home Assistant to confirm that your Noah devices are automatically discovered.
 
 By following these steps, Noah-mqtt will communicate with Home Assistant via your MQTT broker, also supporting automatic device discovery. If you already have MQTT set up, it should integrate seamlessly with your existing configuration.
-
 
 # Configuration
 
@@ -140,3 +138,33 @@ You can configure Noah-mqtt using the following environment variables:
 | `HOMEASSISTANT_TOPIC_PREFIX` | Prefix for topics used by Home Assistant           | homeassistant |
 
 Adjust these settings to fit your environment and requirements.
+
+
+# Run as Home Assistant add-on (Home Assistant OS, Home Assistant Supervised)
+
+If you are using Home Assistant OS or Home Assistant Supervised you can run `noah-mqtt` as a Home Assistant add-on, which provides seamless integration with your Home Assistant setup.
+This option leverages the add-on system to manage and run `noah-mqtt` directly on your Home Assistant instance.
+
+#### Steps to Use the Home Assistant Add-on
+
+1. **Add the Repository:**
+   - Open your Home Assistant web interface.
+   - Navigate to **Settings** > **Add-ons** > **Add-on Store**.
+   - Click on the three-dot menu in the top right corner and select **Repositories**.
+   - Add the following URL: `https://github.com/mtrossbach/hassio-addons`.
+
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmtrossbach%2Fhassio-addons)
+
+2. **Install the Add-on:**
+   - Search for the `noah-mqtt` add-on within the Add-on Store.
+   - Click on the add-on and select **Install**.
+
+3. **Configure the Add-on:**
+   - After installation, configure the add-on settings by providing your **Growatt username** and **Growatt password** and setup the other options as needed.
+
+4. **Start the Add-on:**
+   - Click **Start** to launch the `noah-mqtt` add-on.
+
+The Home Assistant add-on provides an easy and integrated way to run `noah-mqtt`, allowing you to manage it directly from the Home Assistant interface.
+
+For more detailed information and updates, visit the [repository](https://github.com/mtrossbach/hassio-addons).
