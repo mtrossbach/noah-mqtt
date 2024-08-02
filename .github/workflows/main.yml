@@ -36,4 +36,16 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      -
+        name: 'release: Trigger mtrossbach/hassio-addons build'
+        if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+        run: |
+            TAG=${GITHUB_REF#refs/*/}
+            echo "Triggering with tag '$TAG'"
+            curl \
+              -X POST \
+              -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+              -H "Accept: application/vnd.github.everest-preview+json" \
+              -H "Content-Type: application/json" \
+              https://api.github.com/repos/mtrossbach/hassio-addons/dispatches \
+              --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"$TAG-1\"}}"
