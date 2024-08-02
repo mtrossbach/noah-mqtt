@@ -48,4 +48,4 @@ jobs:
               -H "Accept: application/vnd.github.everest-preview+json" \
               -H "Content-Type: application/json" \
               https://api.github.com/repos/mtrossbach/hassio-addons/dispatches \
-              --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"$TAG-1\"}}"
+              --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"${TAG:1}\"}}"
