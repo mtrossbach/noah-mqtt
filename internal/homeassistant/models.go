@@ -29,6 +29,7 @@ const (
 	IconSolarPower   Icon = "mdi:solar-power"
 	IconBatteryPlus  Icon = "mdi:battery-plus"
 	IconBatteryMinus Icon = "mdi:battery-minus"
+	IconCarBattery   Icon = "mdi:car-battery"
 )
 
 type Sensor struct {

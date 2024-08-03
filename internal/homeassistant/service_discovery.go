@@ -85,5 +85,14 @@ func (s *Service) GenerateSensorDiscoveryPayload(deviceName string, serialNumber
 			UniqueId:          fmt.Sprintf("%s_%s", serialNumber, "soc"),
 			Device:            device,
 		},
+		{
+			Name:          "Number Of Batteries",
+			StateClass:    StateClassMeasurement,
+			StateTopic:    stateTopic,
+			Icon:          IconCarBattery,
+			ValueTemplate: "{{ value_json.battery_num }}",
+			UniqueId:      fmt.Sprintf("%s_%s", serialNumber, "battery_num"),
+			Device:        device,
+		},
 	}
 }
