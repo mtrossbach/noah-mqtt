@@ -80,6 +80,10 @@ func (s *Service) stateTopicBattery(serialNumber string, index int) string {
 	return fmt.Sprintf("%s/%s/BAT%d", s.options.TopicPrefix, serialNumber, index)
 }
 
+func (s *Service) parameterStateTopic(serialNumber string) string {
+	return fmt.Sprintf("%s/%s/parameters", s.options.TopicPrefix, serialNumber)
+}
+
 func (s *Service) fetchNoahSerialNumbers() []string {
 	slog.Info("fetching plant list")
 	list, err := s.options.GrowattClient.GetPlantList()
@@ -115,10 +119,13 @@ func (s *Service) poll() {
 	slog.Info("start polling growatt", slog.Int("interval", int(s.options.PollingInterval/time.Second)))
 	for {
 		for _, serialNumber := range s.serialNumbers {
+			var workMode string
+
 			if data, err := s.options.GrowattClient.GetNoahStatus(serialNumber); err != nil {
 				slog.Error("could not get device data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 			} else {
-				if b, err := json.Marshal(noahStatusToPayload(data)); err != nil {
+				workMode = data.Obj.WorkMode
+				if b, err := json.Marshal(devicePayload(data)); err != nil {
 					slog.Error("could not marshal device data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 				} else {
 					s.options.MqttClient.Publish(s.deviceStateTopic(serialNumber), 0, false, string(b))
@@ -130,12 +137,23 @@ func (s *Service) poll() {
 				slog.Error("could not get battery data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 			} else {
 				for i, bat := range data.Obj.Batter {
-					if b, err := json.Marshal(noahBatteryDetailsToBatteryPayload(&bat)); err != nil {
+					if b, err := json.Marshal(batteryPayload(&bat)); err != nil {
 						slog.Error("could not marshal battery data", slog.String("error", err.Error()))
 					} else {
 						s.options.MqttClient.Publish(s.stateTopicBattery(serialNumber, i), 0, false, string(b))
 						slog.Debug("battery data received", slog.String("data", string(b)), slog.String("device", serialNumber))
 					}
+				}
+			}
+
+			if data, err := s.options.GrowattClient.GetNoahInfo(serialNumber); err != nil {
+				slog.Error("could not get parameter data", slog.String("error", err.Error()), slog.String("device", serialNumber))
+			} else {
+				if b, err := json.Marshal(parameterPayload(data, workMode)); err != nil {
+					slog.Error("could not marshal parameter data", slog.String("error", err.Error()), slog.String("device", serialNumber))
+				} else {
+					s.options.MqttClient.Publish(s.parameterStateTopic(serialNumber), 0, false, string(b))
+					slog.Debug("parameter data received", slog.String("data", string(b)), slog.String("device", serialNumber))
 				}
 			}
 		}
