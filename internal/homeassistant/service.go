@@ -11,10 +11,12 @@ import (
 type Options struct {
 	MqttClient  mqtt.Client
 	TopicPrefix string
+	Version     string
 }
 
 type Service struct {
-	options           Options
+	options Options
+
 	devices           []DeviceInfo
 	statusChangeToken mqtt.Token
 }
@@ -39,7 +41,7 @@ func (s *Service) SetDevices(devices []DeviceInfo) {
 
 func (s *Service) sendDiscovery() {
 	for _, d := range s.devices {
-		sensors := generateSensorDiscoveryPayload(d.Alias, d.SerialNumber, d.Batteries, d.StateTopic)
+		sensors := generateSensorDiscoveryPayload(s.options.Version, d)
 		for _, sensor := range sensors {
 			if b, err := json.Marshal(sensor); err != nil {
 				slog.Error("could not marshal sensor discovery payload", slog.Any("sensor", sensor))

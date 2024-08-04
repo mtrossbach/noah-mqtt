@@ -33,6 +33,7 @@ func main() {
 		haService := homeassistant.NewService(homeassistant.Options{
 			MqttClient:  client,
 			TopicPrefix: cfg.HomeAssistant.TopicPrefix,
+			Version:     cfg.Version,
 		})
 		pollingService := polling.NewService(polling.Options{
 			GrowattClient:   growattClient,

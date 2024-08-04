@@ -45,10 +45,10 @@ func (s *Service) enumerateDevices() {
 	serialNumbers := s.fetchNoahSerialNumbers()
 	var devices []homeassistant.DeviceInfo
 	for _, serialNumber := range serialNumbers {
-		if data, err := s.options.GrowattClient.GetNoahStatus(serialNumber); err != nil {
+		if data, err := s.options.GrowattClient.GetNoahInfo(serialNumber); err != nil {
 			slog.Error("could not noah status", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
 		} else {
-			batCount := int(parseFloat(data.Obj.BatteryNum))
+			batCount := len(data.Obj.Noah.BatSns)
 			var batteries []homeassistant.BatteryInfo
 			for i := 0; i < batCount; i++ {
 				batteries = append(batteries, homeassistant.BatteryInfo{
@@ -59,9 +59,11 @@ func (s *Service) enumerateDevices() {
 
 			devices = append(devices, homeassistant.DeviceInfo{
 				SerialNumber: serialNumber,
-				Alias:        data.Obj.Alias,
+				Alias:        data.Obj.Noah.Alias,
 				StateTopic:   s.deviceStateTopic(serialNumber),
 				Batteries:    batteries,
+				Model:        data.Obj.Noah.Model,
+				Version:      data.Obj.Noah.Version,
 			})
 		}
 	}

@@ -50,6 +50,8 @@ type Device struct {
 	Identifiers  []string `json:"identifiers,omitempty"`
 	Name         string   `json:"name,omitempty"`
 	Manufacturer string   `json:"manufacturer,omitempty"`
+	HwVersion    string   `json:"hw_version,omitempty"`
+	SwVersion    string   `json:"sw_version,omitempty"`
 	Model        string   `json:"model,omitempty"`
 	SerialNumber string   `json:"serial_number,omitempty"`
 }
