@@ -2,15 +2,19 @@ package homeassistant
 
 import "fmt"
 
-func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor {
+func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor {
 	device := Device{
 		Identifiers:  []string{fmt.Sprintf("noah_%s", info.SerialNumber)},
 		Name:         info.Alias,
 		Manufacturer: "Growatt",
-		HwVersion:    info.Version,
-		SwVersion:    swVersion,
+		SwVersion:    info.Version,
 		Model:        info.Model,
 		SerialNumber: info.SerialNumber,
+	}
+	origin := Origin{
+		Name:       "noah-mqtt",
+		SwVersion:  appVersion,
+		SupportUrl: "https://github.com/mtrossbach/noah-mqtt",
 	}
 
 	sensors := []Sensor{
@@ -23,6 +27,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 			ValueTemplate:     "{{ value_json.output_w }}",
 			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "output_power"),
 			Device:            device,
+			Origin:            origin,
 		},
 		{
 			Name:              "Solar Power",
@@ -34,6 +39,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 			ValueTemplate:     "{{ value_json.solar_w }}",
 			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "solar_power"),
 			Device:            device,
+			Origin:            origin,
 		},
 		{
 			Name:              "Charging Power",
@@ -45,6 +51,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 			ValueTemplate:     "{{ value_json.charge_w }}",
 			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "charging_power"),
 			Device:            device,
+			Origin:            origin,
 		},
 		{
 			Name:              "Discharge Power",
@@ -56,6 +63,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 			ValueTemplate:     "{{ value_json.discharge_w }}",
 			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "discharge_power"),
 			Device:            device,
+			Origin:            origin,
 		},
 		{
 			Name:              "Generation Total",
@@ -66,6 +74,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 			ValueTemplate:     "{{ value_json.generation_total_kwh }}",
 			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "generation_total"),
 			Device:            device,
+			Origin:            origin,
 		},
 		{
 			Name:              "Generation Today",
@@ -76,6 +85,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 			ValueTemplate:     "{{ value_json.generation_today_kwh }}",
 			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "generation_today"),
 			Device:            device,
+			Origin:            origin,
 		},
 		{
 			Name:              "SoC",
@@ -86,6 +96,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 			ValueTemplate:     "{{ value_json.soc }}",
 			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "soc"),
 			Device:            device,
+			Origin:            origin,
 		},
 		{
 			Name:          "Number Of Batteries",
@@ -95,6 +106,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 			ValueTemplate: "{{ value_json.battery_num }}",
 			UniqueId:      fmt.Sprintf("%s_%s", info.SerialNumber, "battery_num"),
 			Device:        device,
+			Origin:        origin,
 		},
 	}
 
@@ -109,6 +121,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 				ValueTemplate:     "{{ value_json.soc }}",
 				UniqueId:          fmt.Sprintf("%s_%s_%s", info.SerialNumber, b.Alias, "soc"),
 				Device:            device,
+				Origin:            origin,
 			},
 			{
 				Name:              fmt.Sprintf("%s Temperature", b.Alias),
@@ -119,6 +132,7 @@ func generateSensorDiscoveryPayload(swVersion string, info DeviceInfo) []Sensor 
 				ValueTemplate:     "{{ value_json.temp }}",
 				UniqueId:          fmt.Sprintf("%s_%s_%s", info.SerialNumber, b.Alias, "temp"),
 				Device:            device,
+				Origin:            origin,
 			},
 		}...)
 	}

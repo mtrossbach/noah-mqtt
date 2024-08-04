@@ -44,6 +44,7 @@ type Sensor struct {
 	ValueTemplate     string      `json:"value_template,omitempty"`
 	UniqueId          string      `json:"unique_id,omitempty"`
 	Device            Device      `json:"device,omitempty"`
+	Origin            Origin      `json:"origin,omitempty"`
 }
 
 type Device struct {
@@ -54,4 +55,10 @@ type Device struct {
 	SwVersion    string   `json:"sw_version,omitempty"`
 	Model        string   `json:"model,omitempty"`
 	SerialNumber string   `json:"serial_number,omitempty"`
+}
+
+type Origin struct {
+	Name       string `json:"name"`
+	SwVersion  string `json:"sw_version,omitempty"`
+	SupportUrl string `json:"support_url,omitempty"`
 }
