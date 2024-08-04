@@ -3,18 +3,18 @@
 
 UNDER CONSTRUCTION!
 
-Noah-mqtt is a standalone application designed to retrieve data and metrics from your Growatt Noah 2000 home battery used in balcony power plants. It publishes this information to an MQTT broker, making it easily accessible for Home Assistant or other applications.
+`noah-mqtt` is a standalone application designed to retrieve data and metrics from your Growatt NOAH 2000 home battery used in balcony power plants. It publishes this information to an MQTT broker, making it easily accessible for Home Assistant or other applications.
 
-The application features Home Assistant auto-discovery, allowing your Noah devices to be automatically recognized and integrated with Home Assistant via the MQTT integration.
+The application features Home Assistant auto-discovery, allowing your NOAH devices to be automatically recognized and integrated with Home Assistant via the MQTT integration.
 
 
 # ![HomeAssistant screenshot](/assets/ha-screenshot.png)
 
 # Run the application standalone
 
-## Option 1: Running Noah-mqtt with Docker
+## Option 1: Running `noah-mqtt` with Docker
 
-To run the latest version of Noah-mqtt using Docker, follow these steps:
+To run the latest version of `noah-mqtt` using Docker, follow these steps:
 
 1. **Install Docker**: Ensure Docker is installed on your system. You can download Docker Desktop from [Docker’s official website](https://www.docker.com/products/docker-desktop).
 
@@ -33,7 +33,7 @@ To run the latest version of Noah-mqtt using Docker, follow these steps:
 - Replace localhost with the hostname or IP address of your MQTT broker.
 - Replace 1883 with the port number your MQTT broker uses (default is 1883).
 
-The application will connect to your MQTT broker and retrieve all metrics and data for your Noah devices.
+The application will connect to your MQTT broker and retrieve all metrics and data for your NOAH devices.
 
 ## Option 2: Downloading and running a prebuilt binary
 
@@ -93,14 +93,14 @@ Afterwards follow the instructions for running the application from option 2.
 
 # Integration into HomeAssistant
 
-Noah-mqtt interacts with Home Assistant by publishing data from your Growatt Noah 2000 home battery to an MQTT broker. This setup allows Home Assistant to subscribe to and integrate this data seamlessly into its ecosystem.
+`noah-mqtt` interacts with Home Assistant by publishing data from your Growatt NOAH 2000 home battery to an MQTT broker. This setup allows Home Assistant to subscribe to and integrate this data seamlessly into its ecosystem.
 
 ![Home Assistant Integration](./assets/noah-mqtt-ha-dark.drawio.png#gh-dark-mode-only)
 ![Home Assistant Integration](./assets/noah-mqtt-ha.drawio.png#gh-light-mode-only)
 
-If you’re already using MQTT with other integrations like zigbee2mqtt or AhoyDTU, you already have the MQTT integration configured and active. In this case, you can skip step 1 and 2 as your existing setup should work with Noah-mqtt.
+If you’re already using MQTT with other integrations like zigbee2mqtt or AhoyDTU, you already have the MQTT integration configured and active. In this case, you can skip step 1 and 2 as your existing setup should work with `noah-mqtt`.
 
-The following integration process for Noah-mqtt with Home Assistant works for all installation methods, regardless of how Home Assistant is installed—whether it’s through Home Assistant OS, Home Assistant Supervised, or Home Assistant Container. 
+The following integration process for `noah-mqtt` with Home Assistant works for all installation methods, regardless of how Home Assistant is installed—whether it’s through Home Assistant OS, Home Assistant Supervised, or Home Assistant Container. 
 
 1. **Set Up an MQTT Broker**:  
    Ensure you have an MQTT broker running, such as [Mosquitto](https://mosquitto.org/), and that it’s accessible from both Noah-mqtt and Home Assistant.
@@ -111,17 +111,17 @@ The following integration process for Noah-mqtt with Home Assistant works for al
    - Enter your MQTT broker details (hostname, port, username, password).
    - Test the connection to ensure it’s working correctly.
 
-3. **Run Noah-mqtt**:  
-   Start Noah-mqtt using the appropriate configuration for your MQTT broker.
+3. **Run noah-mqtt**:  
+   Start `noah-mqtt` using the appropriate configuration for your MQTT broker.
 
 4. **Verify Device Discovery**:  
    Check **Devices** and **Entities** under **Settings** > **Devices & Services** in Home Assistant to confirm that your Noah devices are automatically discovered.
 
-By following these steps, Noah-mqtt will communicate with Home Assistant via your MQTT broker, also supporting automatic device discovery. If you already have MQTT set up, it should integrate seamlessly with your existing configuration.
+By following these steps, `noah-mqtt` will communicate with Home Assistant via your MQTT broker, also supporting automatic device discovery. If you already have MQTT set up, it should integrate seamlessly with your existing configuration.
 
 # Configuration
 
-You can configure Noah-mqtt using the following environment variables:
+You can configure `noah-mqtt` using the following environment variables:
 
 | Environment Variable         | Description                                        | Default       |
 |:-----------------------------|:---------------------------------------------------|:--------------| 
