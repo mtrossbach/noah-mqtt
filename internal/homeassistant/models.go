@@ -3,9 +3,10 @@ package homeassistant
 type DeviceClass string
 
 const (
-	DeviceClassEnergy  DeviceClass = "energy"
-	DeviceClassBattery DeviceClass = "battery"
-	DeviceClassPower   DeviceClass = "power"
+	DeviceClassEnergy      DeviceClass = "energy"
+	DeviceClassBattery     DeviceClass = "battery"
+	DeviceClassTemperature DeviceClass = "temperature"
+	DeviceClassPower       DeviceClass = "power"
 )
 
 type StateClass string
@@ -21,6 +22,7 @@ const (
 	UnitKilowattHours Unit = "kWh"
 	UnitWatt          Unit = "W"
 	UnitPercent       Unit = "%"
+	UnitCelsius       Unit = "°C"
 )
 
 type Icon string

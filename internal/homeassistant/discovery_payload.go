@@ -2,7 +2,7 @@ package homeassistant
 
 import "fmt"
 
-func (s *Service) GenerateSensorDiscoveryPayload(deviceName string, serialNumber string, stateTopic string) []Sensor {
+func generateSensorDiscoveryPayload(deviceName string, serialNumber string, batteries []BatteryInfo, stateTopic string) []Sensor {
 	device := Device{
 		Identifiers:  []string{fmt.Sprintf("noah_%s", serialNumber)},
 		Name:         deviceName,
@@ -11,7 +11,7 @@ func (s *Service) GenerateSensorDiscoveryPayload(deviceName string, serialNumber
 		SerialNumber: serialNumber,
 	}
 
-	return []Sensor{
+	sensors := []Sensor{
 		{
 			Name:              "Output Power",
 			DeviceClass:       DeviceClassPower,
@@ -95,4 +95,31 @@ func (s *Service) GenerateSensorDiscoveryPayload(deviceName string, serialNumber
 			Device:        device,
 		},
 	}
+
+	for _, b := range batteries {
+		sensors = append(sensors, []Sensor{
+			{
+				Name:              fmt.Sprintf("%s SoC", b.Alias),
+				DeviceClass:       DeviceClassBattery,
+				StateClass:        StateClassMeasurement,
+				StateTopic:        b.StateTopic,
+				UnitOfMeasurement: UnitPercent,
+				ValueTemplate:     "{{ value_json.soc }}",
+				UniqueId:          fmt.Sprintf("%s_%s_%s", serialNumber, b.Alias, "soc"),
+				Device:            device,
+			},
+			{
+				Name:              fmt.Sprintf("%s Temperature", b.Alias),
+				DeviceClass:       DeviceClassTemperature,
+				StateClass:        StateClassMeasurement,
+				StateTopic:        b.StateTopic,
+				UnitOfMeasurement: UnitCelsius,
+				ValueTemplate:     "{{ value_json.temp }}",
+				UniqueId:          fmt.Sprintf("%s_%s_%s", serialNumber, b.Alias, "temp"),
+				Device:            device,
+			},
+		}...)
+	}
+
+	return sensors
 }

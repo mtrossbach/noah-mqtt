@@ -20,7 +20,8 @@ type Options struct {
 }
 
 type Service struct {
-	options Options
+	options       Options
+	serialNumbers []string
 }
 
 func NewService(options Options) *Service {
@@ -35,21 +36,46 @@ func (s *Service) Start() {
 		panic(err)
 	}
 
+	s.enumerateDevices()
+
+	go s.poll()
+}
+
+func (s *Service) enumerateDevices() {
 	serialNumbers := s.fetchNoahSerialNumbers()
+	var devices []homeassistant.DeviceInfo
 	for _, serialNumber := range serialNumbers {
 		if data, err := s.options.GrowattClient.GetNoahStatus(serialNumber); err != nil {
-			slog.Error("could not get data", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
+			slog.Error("could not noah status", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
 		} else {
-			sensors := s.options.HaClient.GenerateSensorDiscoveryPayload(data.Obj.Alias, serialNumber, s.stateTopic(serialNumber))
-			s.options.HaClient.SendSensorDiscoveryPayload(sensors)
+			batCount := int(parseFloat(data.Obj.BatteryNum))
+			var batteries []homeassistant.BatteryInfo
+			for i := 0; i < batCount; i++ {
+				batteries = append(batteries, homeassistant.BatteryInfo{
+					Alias:      fmt.Sprintf("BAT%d", i),
+					StateTopic: s.stateTopicBattery(serialNumber, i),
+				})
+			}
+
+			devices = append(devices, homeassistant.DeviceInfo{
+				SerialNumber: serialNumber,
+				Alias:        data.Obj.Alias,
+				StateTopic:   s.deviceStateTopic(serialNumber),
+				Batteries:    batteries,
+			})
 		}
 	}
 
-	go s.poll(serialNumbers)
+	s.serialNumbers = serialNumbers
+	s.options.HaClient.SetDevices(devices)
 }
 
-func (s *Service) stateTopic(serialNumber string) string {
+func (s *Service) deviceStateTopic(serialNumber string) string {
 	return fmt.Sprintf("%s/%s", s.options.TopicPrefix, serialNumber)
+}
+
+func (s *Service) stateTopicBattery(serialNumber string, index int) string {
+	return fmt.Sprintf("%s/%s/BAT%d", s.options.TopicPrefix, serialNumber, index)
 }
 
 func (s *Service) fetchNoahSerialNumbers() []string {
@@ -69,7 +95,7 @@ func (s *Service) fetchNoahSerialNumbers() []string {
 		} else {
 			if len(info.Obj.DeviceSn) > 0 {
 				serialNumbers = append(serialNumbers, info.Obj.DeviceSn)
-				slog.Info("found device sn", slog.String("deviceSn", info.Obj.DeviceSn), slog.String("plantId", plant.PlantID), slog.String("topic", s.stateTopic(info.Obj.DeviceSn)))
+				slog.Info("found device sn", slog.String("deviceSn", info.Obj.DeviceSn), slog.String("plantId", plant.PlantID), slog.String("topic", s.deviceStateTopic(info.Obj.DeviceSn)))
 			}
 		}
 	}
@@ -83,18 +109,31 @@ func (s *Service) fetchNoahSerialNumbers() []string {
 	return serialNumbers
 }
 
-func (s *Service) poll(serialNumbers []string) {
+func (s *Service) poll() {
 	slog.Info("start polling growatt", slog.Int("interval", int(s.options.PollingInterval/time.Second)))
 	for {
-		for _, serialNumber := range serialNumbers {
+		for _, serialNumber := range s.serialNumbers {
 			if data, err := s.options.GrowattClient.GetNoahStatus(serialNumber); err != nil {
-				slog.Error("could not get data", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
+				slog.Error("could not get device data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 			} else {
 				if b, err := json.Marshal(noahStatusToPayload(data)); err != nil {
-					slog.Error("could not marshal data", slog.String("error", err.Error()), slog.String("serialNumber", serialNumber))
+					slog.Error("could not marshal device data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 				} else {
-					s.options.MqttClient.Publish(s.stateTopic(serialNumber), 1, true, string(b))
-					slog.Debug("data received", slog.String("data", string(b)), slog.String("serialNumber", serialNumber))
+					s.options.MqttClient.Publish(s.deviceStateTopic(serialNumber), 0, false, string(b))
+					slog.Debug("device data received", slog.String("data", string(b)), slog.String("device", serialNumber))
+				}
+			}
+
+			if data, err := s.options.GrowattClient.GetBatteryData(serialNumber); err != nil {
+				slog.Error("could not get battery data", slog.String("error", err.Error()), slog.String("device", serialNumber))
+			} else {
+				for i, bat := range data.Obj.Batter {
+					if b, err := json.Marshal(noahBatteryDetailsToBatteryPayload(&bat)); err != nil {
+						slog.Error("could not marshal battery data", slog.String("error", err.Error()))
+					} else {
+						s.options.MqttClient.Publish(s.stateTopicBattery(serialNumber, i), 0, false, string(b))
+						slog.Debug("battery data received", slog.String("data", string(b)), slog.String("device", serialNumber))
+					}
 				}
 			}
 		}

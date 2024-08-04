@@ -7,7 +7,7 @@ const (
 	WorkModeBatteryFirst = "battery_first"
 )
 
-type Payload struct {
+type DevicePayload struct {
 	OutputPower           float64  `json:"output_w"`
 	SolarPower            float64  `json:"solar_w"`
 	Soc                   float64  `json:"soc"`
@@ -17,4 +17,10 @@ type Payload struct {
 	GenerationTotalEnergy float64  `json:"generation_total_kwh"`
 	GenerationTodayEnergy float64  `json:"generation_today_kwh"`
 	WorkMode              WorkMode `json:"work_mode"`
+}
+
+type BatteryPayload struct {
+	SerialNumber string  `json:"serial"`
+	Soc          float64 `json:"soc"`
+	Temperature  float64 `json:"temp"`
 }

@@ -6,8 +6,8 @@ import (
 	"strconv"
 )
 
-func noahStatusToPayload(n *growatt.NoahStatus) models.Payload {
-	return models.Payload{
+func noahStatusToPayload(n *growatt.NoahStatus) models.DevicePayload {
+	return models.DevicePayload{
 		OutputPower:           parseFloat(n.Obj.Pac),
 		SolarPower:            parseFloat(n.Obj.Ppv),
 		Soc:                   parseFloat(n.Obj.Soc),
@@ -32,5 +32,13 @@ func parseFloat(s string) float64 {
 		return s
 	} else {
 		return 0
+	}
+}
+
+func noahBatteryDetailsToBatteryPayload(n *growatt.BatteryDetails) models.BatteryPayload {
+	return models.BatteryPayload{
+		SerialNumber: n.SerialNum,
+		Soc:          parseFloat(n.Soc),
+		Temperature:  parseFloat(n.Temp),
 	}
 }

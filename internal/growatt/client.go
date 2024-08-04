@@ -1,14 +1,10 @@
 package growatt
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"log/slog"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -41,30 +37,16 @@ func NewClient(username string, password string) *Client {
 }
 
 func (h *Client) Login() error {
-	resp, err := h.postForm("https://openapi.growatt.com/newTwoLoginAPI.do", url.Values{
+	var data LoginResult
+	if _, err := h.postForm("https://openapi.growatt.com/newTwoLoginAPI.do", url.Values{
 		"userName": {h.username},
 		"password": {h.password},
-	})
-	if err != nil {
+	}, &data); err != nil {
 		return err
 	}
 
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
-	}(resp.Body)
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	var data LoginResult
-	if err := json.Unmarshal(b, &data); err != nil {
-		return err
-	}
-
-	if resp.StatusCode != 200 || !data.Back.Success {
-		return fmt.Errorf("login failed: %s", string(b))
+	if !data.Back.Success {
+		return fmt.Errorf("login failed: %s", data.Back.Msg)
 	}
 
 	h.userId = fmt.Sprintf("%d", data.Back.User.ID)
@@ -72,140 +54,53 @@ func (h *Client) Login() error {
 }
 
 func (h *Client) GetPlantList() (*PlantList, error) {
-	resp, err := h.client.Get(fmt.Sprintf("https://openapi.growatt.com/PlantListAPI.do?userId=%s", h.userId))
-	if err != nil {
+	var data PlantList
+	if _, err := h.get("https://openapi.growatt.com/PlantListAPI.do", url.Values{
+		"userId": {h.userId},
+	}, &data); err != nil {
 		return nil, err
 	}
-
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
-	}(resp.Body)
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("get plant list failed: %s", resp.Status)
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var result PlantList
-	if err := json.Unmarshal(b, &result); err != nil {
-		return nil, err
-	}
-
-	if !result.Back.Success {
-		return nil, fmt.Errorf("get plant list failed")
-	}
-
-	return &result, nil
+	return &data, nil
 }
 
 func (h *Client) GetNoahPlantInfo(plantId string) (*NoahPlantInfo, error) {
-	resp, err := h.postForm("https://openapi.growatt.com/noahDeviceApi/noah/isPlantNoahSystem", url.Values{
+	var data NoahPlantInfo
+	if _, err := h.postForm("https://openapi.growatt.com/noahDeviceApi/noah/isPlantNoahSystem", url.Values{
 		"plantId": {plantId},
-	})
-
-	if err != nil {
+	}, &data); err != nil {
 		return nil, err
 	}
-
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
-	}(resp.Body)
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("get noah serial failed: %s", resp.Status)
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var result NoahPlantInfo
-	if err := json.Unmarshal(b, &result); err != nil {
-		return nil, err
-	}
-
-	return &result, nil
+	return &data, nil
 }
 
 func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
-	resp, err := h.postForm("https://openapi.growatt.com/noahDeviceApi/noah/getSystemStatus", url.Values{
-		"deviceSn": {serialNumber},
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
-	}(resp.Body)
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("fetch noah status failed: %s", resp.Status)
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var data NoahStatus
-	if err := json.Unmarshal(b, &data); err != nil {
-		if strings.Contains(err.Error(), "invalid character '<' looking for beginning of value") {
-			if err := h.Login(); err != nil {
-				<-time.After(60 * time.Second)
-				panic(err)
-			}
-			return h.GetNoahStatus(serialNumber)
-		} else {
-			slog.Error("could not parse json", slog.String("error", err.Error()), slog.String("data", string(b)))
-			return nil, err
-		}
+	if _, err := h.postForm("https://openapi.growatt.com/noahDeviceApi/noah/getSystemStatus", url.Values{
+		"deviceSn": {serialNumber},
+	}, &data); err != nil {
+		return nil, err
 	}
-
 	return &data, nil
 }
 
 func (h *Client) GetNoahInfo(serialNumber string) (*NoahInfo, error) {
-	resp, err := h.postForm("https://openapi.growatt.com/noahDeviceApi/noah/getNoahInfoBySn", url.Values{
-		"deviceSn": {serialNumber},
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
-	}(resp.Body)
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("fetch noah status failed: %s", resp.Status)
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var data NoahInfo
-	if err := json.Unmarshal(b, &data); err != nil {
+	if _, err := h.postForm("https://openapi.growatt.com/noahDeviceApi/noah/getNoahInfoBySn", url.Values{
+		"deviceSn": {serialNumber},
+	}, &data); err != nil {
 		return nil, err
 	}
 
 	return &data, nil
 }
 
-func (h *Client) postForm(url string, data url.Values) (resp *http.Response, err error) {
-	req, err := http.NewRequest("POST", url, strings.NewReader(data.Encode()))
-	if err != nil {
+func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
+	var data BatteryInfo
+	if _, err := h.postForm("https://openapi.growatt.com/noahDeviceApi/noah/getBatteryData", url.Values{
+		"deviceSn": {serialNumber},
+	}, &data); err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	return h.client.Do(req)
+
+	return &data, nil
 }

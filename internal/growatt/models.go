@@ -19,22 +19,24 @@ type PlantList struct {
 	} `json:"back"`
 }
 
-type NoahPlantInfo struct {
+type ResponseContainerV2[T any] struct {
 	Msg    string `json:"msg"`
 	Result int    `json:"result"`
-	Obj    struct {
+	Obj    T      `json:"obj"`
+}
+
+type NoahPlantInfo struct {
+	ResponseContainerV2[struct {
 		IsPlantNoahSystem bool   `json:"isPlantNoahSystem"`
 		PlantID           string `json:"plantId"`
 		IsPlantHaveNoah   bool   `json:"isPlantHaveNoah"`
 		DeviceSn          string `json:"deviceSn"`
 		PlantName         string `json:"plantName"`
-	} `json:"obj"`
+	}]
 }
 
 type NoahStatus struct {
-	Msg    string `json:"msg"`
-	Result int    `json:"result"`
-	Obj    struct {
+	ResponseContainerV2[struct {
 		ChargePower     string `json:"chargePower"`
 		WorkMode        string `json:"workMode"`
 		Soc             string `json:"soc"`
@@ -51,13 +53,11 @@ type NoahStatus struct {
 		ProfitTotal     string `json:"profitTotal"`
 		MoneyUnit       string `json:"moneyUnit"`
 		Status          string `json:"status"`
-	} `json:"obj"`
+	}]
 }
 
 type NoahInfo struct {
-	Msg    string `json:"msg"`
-	Result int    `json:"result"`
-	Obj    struct {
+	ResponseContainerV2[struct {
 		Noah struct {
 			TimeSegment              []map[string]string `json:"time_segment"`
 			BatSns                   []string            `json:"batSns"`
@@ -83,5 +83,19 @@ type NoahInfo struct {
 			PlantImgName interface{} `json:"plantImgName"`
 			PlantName    string      `json:"plantName"`
 		} `json:"plantList"`
-	} `json:"obj"`
+	}]
+}
+
+type BatteryInfo struct {
+	ResponseContainerV2[struct {
+		Batter   []BatteryDetails `json:"batter"`
+		TempType string           `json:"tempType"`
+		Time     string           `json:"time"`
+	}]
+}
+
+type BatteryDetails struct {
+	SerialNum string `json:"serialNum"`
+	Soc       string `json:"soc"`
+	Temp      string `json:"temp"`
 }
