@@ -16,6 +16,7 @@ func devicePayload(n *growatt.NoahStatus) models.DevicePayload {
 		BatteryNum:            int(parseFloat(n.Obj.BatteryNum)),
 		GenerationTotalEnergy: parseFloat(n.Obj.EacTotal),
 		GenerationTodayEnergy: parseFloat(n.Obj.EacToday),
+		WorkMode:              workModeFromString(n.Obj.WorkMode),
 	}
 }
 
@@ -42,11 +43,14 @@ func batteryPayload(n *growatt.BatteryDetails) models.BatteryPayload {
 	}
 }
 
-func parameterPayload(n *growatt.NoahInfo, workMode string) models.ParameterPayload {
+func parameterPayload(n *growatt.NoahInfo) models.ParameterPayload {
+	chargingLimit := parseFloat(n.Obj.Noah.ChargingSocHighLimit)
+	dischargeLimit := parseFloat(n.Obj.Noah.ChargingSocLowLimit)
+	outputPower := parseFloat(n.Obj.Noah.DefaultPower)
+
 	return models.ParameterPayload{
-		ChargingLimit:  parseFloat(n.Obj.Noah.ChargingSocHighLimit),
-		DischargeLimit: parseFloat(n.Obj.Noah.ChargingSocLowLimit),
-		OutputPower:    parseFloat(n.Obj.Noah.DefaultPower),
-		WorkMode:       workModeFromString(workMode),
+		ChargingLimit:  &chargingLimit,
+		DischargeLimit: &dischargeLimit,
+		OutputPower:    &outputPower,
 	}
 }

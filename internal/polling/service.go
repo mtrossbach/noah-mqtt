@@ -68,7 +68,16 @@ func (s *Service) enumerateDevices() {
 		}
 	}
 
+	for _, sn := range s.serialNumbers {
+		s.options.MqttClient.Unsubscribe(s.parameterCommandTopic(sn))
+	}
+
 	s.serialNumbers = serialNumbers
+
+	for _, sn := range s.serialNumbers {
+		s.options.MqttClient.Subscribe(s.parameterCommandTopic(sn), 0, s.parametersSubscription(sn))
+	}
+
 	s.options.HaClient.SetDevices(devices)
 }
 
@@ -84,6 +93,10 @@ func (s *Service) parameterStateTopic(serialNumber string) string {
 	return fmt.Sprintf("%s/%s/parameters", s.options.TopicPrefix, serialNumber)
 }
 
+func (s *Service) parameterCommandTopic(serialNumber string) string {
+	return fmt.Sprintf("%s/%s/parameters/set", s.options.TopicPrefix, serialNumber)
+}
+
 func (s *Service) fetchNoahSerialNumbers() []string {
 	slog.Info("fetching plant list")
 	list, err := s.options.GrowattClient.GetPlantList()
@@ -94,14 +107,14 @@ func (s *Service) fetchNoahSerialNumbers() []string {
 
 	var serialNumbers []string
 
-	for _, plant := range list.Back.Data {
-		slog.Info("fetch plant details", slog.String("plantId", plant.PlantID))
-		if info, err := s.options.GrowattClient.GetNoahPlantInfo(plant.PlantID); err != nil {
-			slog.Error("could not get plant info", slog.String("plantId", plant.PlantID), slog.String("error", err.Error()))
+	for _, plant := range list.PlantList {
+		slog.Info("fetch plant details", slog.Int("plantId", plant.ID))
+		if info, err := s.options.GrowattClient.GetNoahPlantInfo(fmt.Sprintf("%d", plant.ID)); err != nil {
+			slog.Error("could not get plant info", slog.Int("plantId", plant.ID), slog.String("error", err.Error()))
 		} else {
 			if len(info.Obj.DeviceSn) > 0 {
 				serialNumbers = append(serialNumbers, info.Obj.DeviceSn)
-				slog.Info("found device sn", slog.String("deviceSn", info.Obj.DeviceSn), slog.String("plantId", plant.PlantID), slog.String("topic", s.deviceStateTopic(info.Obj.DeviceSn)))
+				slog.Info("found device sn", slog.String("deviceSn", info.Obj.DeviceSn), slog.Int("plantId", plant.ID), slog.String("topic", s.deviceStateTopic(info.Obj.DeviceSn)))
 			}
 		}
 	}
@@ -119,12 +132,9 @@ func (s *Service) poll() {
 	slog.Info("start polling growatt", slog.Int("interval", int(s.options.PollingInterval/time.Second)))
 	for {
 		for _, serialNumber := range s.serialNumbers {
-			var workMode string
-
 			if data, err := s.options.GrowattClient.GetNoahStatus(serialNumber); err != nil {
 				slog.Error("could not get device data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 			} else {
-				workMode = data.Obj.WorkMode
 				if b, err := json.Marshal(devicePayload(data)); err != nil {
 					slog.Error("could not marshal device data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 				} else {
@@ -149,7 +159,7 @@ func (s *Service) poll() {
 			if data, err := s.options.GrowattClient.GetNoahInfo(serialNumber); err != nil {
 				slog.Error("could not get parameter data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 			} else {
-				if b, err := json.Marshal(parameterPayload(data, workMode)); err != nil {
+				if b, err := json.Marshal(parameterPayload(data)); err != nil {
 					slog.Error("could not marshal parameter data", slog.String("error", err.Error()), slog.String("device", serialNumber))
 				} else {
 					s.options.MqttClient.Publish(s.parameterStateTopic(serialNumber), 0, false, string(b))
