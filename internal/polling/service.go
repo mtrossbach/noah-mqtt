@@ -58,12 +58,14 @@ func (s *Service) enumerateDevices() {
 			}
 
 			devices = append(devices, homeassistant.DeviceInfo{
-				SerialNumber: serialNumber,
-				Alias:        data.Obj.Noah.Alias,
-				StateTopic:   s.deviceStateTopic(serialNumber),
-				Batteries:    batteries,
-				Model:        data.Obj.Noah.Model,
-				Version:      data.Obj.Noah.Version,
+				SerialNumber:          serialNumber,
+				Model:                 data.Obj.Noah.Model,
+				Version:               data.Obj.Noah.Version,
+				Alias:                 data.Obj.Noah.Alias,
+				StateTopic:            s.deviceStateTopic(serialNumber),
+				ParameterStateTopic:   s.parameterStateTopic(serialNumber),
+				ParameterCommandTopic: s.parameterCommandTopic(serialNumber),
+				Batteries:             batteries,
 			})
 		}
 	}

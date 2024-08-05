@@ -145,7 +145,7 @@ func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 }
 
 func (h *Client) SetDefaultPower(serialNumber string, power float64) error {
-	p := math.Max(10, math.Min(800, power))
+	p := math.Max(0, math.Min(800, power))
 	var data map[string]any
 	if _, err := h.postForm(growattUrl+"/noahDeviceApi/noah/set", url.Values{
 		"serialNum": {serialNumber},

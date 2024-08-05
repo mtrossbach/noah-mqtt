@@ -50,9 +50,24 @@ func (s *Service) sendDiscovery() {
 				s.options.MqttClient.Publish(topic, 0, false, string(b))
 			}
 		}
+
+		numbers := generateNumberDiscoveryPayload(s.options.Version, d)
+		for _, number := range numbers {
+			if b, err := json.Marshal(number); err != nil {
+				slog.Error("could not marshal number discovery payload", slog.Any("number", number))
+			} else {
+				topic := s.numberTopic(number)
+				s.options.MqttClient.Publish(topic, 0, false, string(b))
+			}
+		}
 	}
 }
 
 func (s *Service) sensorTopic(sensor Sensor) string {
 	return fmt.Sprintf("%s/sensor/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
+}
+
+func (s *Service) numberTopic(number Number) string {
+	return fmt.Sprintf("%s/number/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", number.Device.SerialNumber), strings.ReplaceAll(number.Name, " ", ""))
+
 }

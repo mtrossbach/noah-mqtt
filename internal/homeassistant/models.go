@@ -62,3 +62,29 @@ type Origin struct {
 	SwVersion  string `json:"sw_version,omitempty"`
 	SupportUrl string `json:"support_url,omitempty"`
 }
+
+type Number struct {
+	Name              string      `json:"name"`
+	UniqueId          string      `json:"unique_id,omitempty"`
+	CommandTemplate   string      `json:"command_template,omitempty"`
+	CommandTopic      string      `json:"command_topic"`
+	Device            Device      `json:"device,omitempty"`
+	Origin            Origin      `json:"origin,omitempty"`
+	Icon              Icon        `json:"icon,omitempty"`
+	DeviceClass       DeviceClass `json:"device_class,omitempty"`
+	StateTopic        string      `json:"state_topic"`
+	StateClass        StateClass  `json:"state_class,omitempty"`
+	Mode              Mode        `json:"mode,omitempty"`
+	Step              float64     `json:"step,omitempty"`
+	Min               float64     `json:"min,omitempty"`
+	Max               float64     `json:"max,omitempty"`
+	UnitOfMeasurement Unit        `json:"unit_of_measurement,omitempty"`
+	ValueTemplate     string      `json:"value_template,omitempty"`
+}
+
+type Mode string
+
+const (
+	ModeBox    Mode = "box"
+	ModeSlider Mode = "slider"
+)

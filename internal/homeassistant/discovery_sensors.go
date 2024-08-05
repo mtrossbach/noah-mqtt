@@ -3,19 +3,8 @@ package homeassistant
 import "fmt"
 
 func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor {
-	device := Device{
-		Identifiers:  []string{fmt.Sprintf("noah_%s", info.SerialNumber)},
-		Name:         info.Alias,
-		Manufacturer: "Growatt",
-		SwVersion:    info.Version,
-		Model:        info.Model,
-		SerialNumber: info.SerialNumber,
-	}
-	origin := Origin{
-		Name:       "noah-mqtt",
-		SwVersion:  appVersion,
-		SupportUrl: "https://github.com/mtrossbach/noah-mqtt",
-	}
+	device := generateDevice(info)
+	origin := generateOrigin(appVersion)
 
 	sensors := []Sensor{
 		{
