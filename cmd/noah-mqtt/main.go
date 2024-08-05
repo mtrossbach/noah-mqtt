@@ -15,6 +15,11 @@ import (
 	"syscall"
 )
 
+var (
+	version = "local"
+	commit  = "none"
+)
+
 func main() {
 	cfg := config.Get()
 	logging.Init(cfg.LogLevel)
@@ -22,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	slog.Info("noah-mqtt started", slog.String("version", cfg.Version))
+	slog.Info("noah-mqtt started", slog.String("version", version), slog.String("commit", commit))
 
 	if currentUser, err := user.Current(); err == nil {
 		slog.Info("running as", slog.String("username", currentUser.Username), slog.String("uid", currentUser.Uid))
@@ -33,7 +38,7 @@ func main() {
 		haService := homeassistant.NewService(homeassistant.Options{
 			MqttClient:  client,
 			TopicPrefix: cfg.HomeAssistant.TopicPrefix,
-			Version:     cfg.Version,
+			Version:     version,
 		})
 		pollingService := polling.NewService(polling.Options{
 			GrowattClient:   growattClient,
