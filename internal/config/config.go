@@ -2,7 +2,6 @@ package config
 
 import (
 	"errors"
-	"math"
 	"os"
 	"strconv"
 	"sync"
@@ -10,12 +9,13 @@ import (
 )
 
 type Config struct {
-	LogLevel          string
-	DetailsCycleSkips int
-	PollingInterval   time.Duration
-	Growatt           Growatt
-	Mqtt              Mqtt
-	HomeAssistant     HomeAssistant
+	LogLevel                      string
+	PollingInterval               time.Duration
+	BatteryDetailsPollingInterval time.Duration
+	ParameterPollingInterval      time.Duration
+	Growatt                       Growatt
+	Mqtt                          Mqtt
+	HomeAssistant                 HomeAssistant
 }
 
 type Growatt struct {
@@ -42,9 +42,10 @@ var _once sync.Once
 func Get() Config {
 	_once.Do(func() {
 		_config = Config{
-			LogLevel:          getEnv("LOG_LEVEL", "info"),
-			DetailsCycleSkips: int(math.Min(math.Max(0, float64(s2i(getEnv("DETAILS_CYCLE_SKIPS", "2")))), 999)),
-			PollingInterval:   time.Duration(s2i(getEnv("POLLING_INTERVAL", "10"))) * time.Second,
+			LogLevel:                      getEnv("LOG_LEVEL", "info"),
+			PollingInterval:               time.Duration(s2i(getEnv("POLLING_INTERVAL", "10"))) * time.Second,
+			BatteryDetailsPollingInterval: time.Duration(s2i(getEnv("BATTERY_DETAILS_POLLING_INTERVAL", "60"))) * time.Second,
+			ParameterPollingInterval:      time.Duration(s2i(getEnv("PARAMETER_POLLING_INTERVAL", "60"))) * time.Second,
 			Growatt: Growatt{
 				Username: getEnv("GROWATT_USERNAME", ""),
 				Password: getEnv("GROWATT_PASSWORD", ""),

@@ -43,12 +43,13 @@ func main() {
 			Version:     version,
 		})
 		pollingService := polling.NewService(polling.Options{
-			GrowattClient:     growattClient,
-			HaClient:          haService,
-			MqttClient:        client,
-			PollingInterval:   cfg.PollingInterval,
-			TopicPrefix:       cfg.Mqtt.TopicPrefix,
-			DetailsCycleSkips: cfg.DetailsCycleSkips,
+			GrowattClient:                 growattClient,
+			HaClient:                      haService,
+			MqttClient:                    client,
+			PollingInterval:               cfg.PollingInterval,
+			BatteryDetailsPollingInterval: cfg.BatteryDetailsPollingInterval,
+			ParameterPollingInterval:      cfg.ParameterPollingInterval,
+			TopicPrefix:                   cfg.Mqtt.TopicPrefix,
 		})
 		pollingService.Start()
 	})

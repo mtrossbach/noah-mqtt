@@ -12,12 +12,13 @@ import (
 )
 
 type Options struct {
-	GrowattClient     *growatt.Client
-	HaClient          *homeassistant.Service
-	MqttClient        mqtt.Client
-	PollingInterval   time.Duration
-	TopicPrefix       string
-	DetailsCycleSkips int
+	GrowattClient                 *growatt.Client
+	HaClient                      *homeassistant.Service
+	MqttClient                    mqtt.Client
+	PollingInterval               time.Duration
+	BatteryDetailsPollingInterval time.Duration
+	ParameterPollingInterval      time.Duration
+	TopicPrefix                   string
 }
 
 type Service struct {
@@ -133,20 +134,31 @@ func (s *Service) fetchNoahSerialNumbers() []string {
 
 func (s *Service) poll() {
 	slog.Info("start polling growatt", slog.Int("interval", int(s.options.PollingInterval/time.Second)))
-	i := 0
-	for {
-		for _, serialNumber := range s.serialNumbers {
-			s.pollStatus(serialNumber)
-			if i%(s.options.DetailsCycleSkips+1) == 0 {
+
+	go func() {
+		for {
+			for _, serialNumber := range s.serialNumbers {
+				s.pollStatus(serialNumber)
+			}
+			<-time.After(s.options.PollingInterval)
+		}
+	}()
+
+	go func() {
+		for {
+			for _, serialNumber := range s.serialNumbers {
 				s.pollBatteryDetails(serialNumber)
+			}
+			<-time.After(s.options.BatteryDetailsPollingInterval)
+		}
+	}()
+
+	go func() {
+		for {
+			for _, serialNumber := range s.serialNumbers {
 				s.pollParameterData(serialNumber)
 			}
+			<-time.After(s.options.ParameterPollingInterval)
 		}
-		<-time.After(s.options.PollingInterval)
-
-		i += 1
-		if i >= 1000 {
-			i = 0
-		}
-	}
+	}()
 }
