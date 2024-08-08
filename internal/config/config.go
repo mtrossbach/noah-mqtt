@@ -43,7 +43,7 @@ func Get() Config {
 	_once.Do(func() {
 		_config = Config{
 			LogLevel:          getEnv("LOG_LEVEL", "info"),
-			DetailsCycleSkips: int(math.Min(math.Max(1, float64(s2i(getEnv("DETAILS_CYCLE_SKIPS", "2")))), 999)),
+			DetailsCycleSkips: int(math.Min(math.Max(0, float64(s2i(getEnv("DETAILS_CYCLE_SKIPS", "2")))), 999)),
 			PollingInterval:   time.Duration(s2i(getEnv("POLLING_INTERVAL", "10"))) * time.Second,
 			Growatt: Growatt{
 				Username: getEnv("GROWATT_USERNAME", ""),
