@@ -133,7 +133,10 @@ func (s *Service) fetchNoahSerialNumbers() []string {
 }
 
 func (s *Service) poll() {
-	slog.Info("start polling growatt", slog.Int("interval", int(s.options.PollingInterval/time.Second)))
+	slog.Info("start polling growatt",
+		slog.Int("interval", int(s.options.PollingInterval/time.Second)),
+		slog.Int("battery-details-interval", int(s.options.BatteryDetailsPollingInterval/time.Second)),
+		slog.Int("parameter-interval", int(s.options.ParameterPollingInterval/time.Second)))
 
 	go func() {
 		for {
