@@ -16,6 +16,7 @@ func (s *Service) parametersSubscription(sn string) func(client mqtt.Client, mes
 		}
 
 		if payload.OutputPower != nil {
+			slog.Info("Trying to set default power", slog.String("device", sn), slog.Int("power", int(*payload.OutputPower)))
 			if err := s.options.GrowattClient.SetDefaultPower(sn, *payload.OutputPower); err != nil {
 				slog.Error("unable to set default power", slog.String("error", err.Error()), slog.String("device", sn))
 			} else {
@@ -25,6 +26,7 @@ func (s *Service) parametersSubscription(sn string) func(client mqtt.Client, mes
 		}
 
 		if payload.ChargingLimit != nil && payload.DischargeLimit != nil {
+			slog.Info("Trying to set charging/discharge limit", slog.String("device", sn), slog.Float64("chargingLimit", *payload.ChargingLimit), slog.Float64("dischargeLimit", *payload.DischargeLimit))
 			if err := s.options.GrowattClient.SetSocLimit(sn, *payload.ChargingLimit, *payload.DischargeLimit); err != nil {
 				slog.Error("unable to set charging/discharge limit", slog.String("error", err.Error()))
 			} else {
