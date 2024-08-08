@@ -8,6 +8,7 @@ import (
 	"noah-mqtt/internal/growatt"
 	"noah-mqtt/internal/homeassistant"
 	"noah-mqtt/internal/logging"
+	"noah-mqtt/internal/misc"
 	"noah-mqtt/internal/polling"
 	"os"
 	"os/signal"
@@ -24,7 +25,8 @@ func main() {
 	cfg := config.Get()
 	logging.Init(cfg.LogLevel)
 	if err := config.Validate(); err != nil {
-		panic(err)
+		slog.Error("couldn't validate config", slog.String("error", err.Error()))
+		misc.Panic(err)
 	}
 
 	slog.Info("noah-mqtt started", slog.String("version", version), slog.String("commit", commit))
@@ -71,12 +73,13 @@ func connectMqtt(mqttCfg config.Mqtt, onConnected func(client mqtt.Client)) {
 
 	opts.OnConnectionLost = func(client mqtt.Client, err error) {
 		slog.Error("lost connection to mqtt broker", slog.String("error", err.Error()))
-		panic(err)
+		misc.Panic(err)
 	}
 
 	c := mqtt.NewClient(opts)
 	slog.Info("connecting to mqtt broker", slog.String("host", mqttCfg.Host), slog.Int("port", mqttCfg.Port), slog.String("clientId", mqttCfg.ClientId), slog.String("username", mqttCfg.Username))
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+		slog.Error("could not connect to mqtt broker", slog.String("error", token.Error().Error()))
+		misc.Panic(token.Error())
 	}
 }

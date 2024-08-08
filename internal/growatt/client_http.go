@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
+	"noah-mqtt/internal/misc"
 	"strings"
-	"time"
 )
 
 func (h *Client) postForm(url string, data url.Values, responseBody any) (*http.Response, error) {
@@ -42,8 +43,8 @@ func (h *Client) postForm(url string, data url.Values, responseBody any) (*http.
 		if err := json.Unmarshal(b, &responseBody); err != nil {
 			if strings.Contains(err.Error(), "invalid character '<' looking for beginning of value") {
 				if err := h.Login(); err != nil {
-					<-time.After(60 * time.Second)
-					panic(err)
+					slog.Error("could not re-login", slog.String("error", err.Error()))
+					misc.Panic(err)
 				}
 				return h.postForm(url, data, responseBody)
 			} else {

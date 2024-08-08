@@ -3,10 +3,12 @@ package growatt
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"log/slog"
 	"math"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"noah-mqtt/internal/misc"
 	"time"
 )
 
@@ -25,7 +27,8 @@ type Client struct {
 func NewClient(username string, password string) *Client {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		panic(err)
+		slog.Error("could not create cookie jar", slog.String("error", err.Error()))
+		misc.Panic(err)
 	}
 
 	return &Client{

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"noah-mqtt/internal/growatt"
 	"noah-mqtt/internal/homeassistant"
+	"noah-mqtt/internal/misc"
 	"os"
 	"time"
 )
@@ -33,7 +34,7 @@ func NewService(options Options) *Service {
 func (s *Service) Start() {
 	if err := s.options.GrowattClient.Login(); err != nil {
 		slog.Error("could not login to growatt account", slog.String("error", err.Error()))
-		panic(err)
+		misc.Panic(err)
 	}
 
 	s.enumerateDevices()
@@ -104,7 +105,7 @@ func (s *Service) fetchNoahSerialNumbers() []string {
 	list, err := s.options.GrowattClient.GetPlantList()
 	if err != nil {
 		slog.Error("could not get plant list", slog.String("error", err.Error()))
-		panic(err)
+		misc.Panic(err)
 	}
 
 	var serialNumbers []string
