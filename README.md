@@ -123,19 +123,20 @@ By following these steps, `noah-mqtt` will communicate with Home Assistant via y
 
 You can configure `noah-mqtt` using the following environment variables:
 
-| Environment Variable         | Description                                        | Default       |
-|:-----------------------------|:---------------------------------------------------|:--------------| 
-| `LOG_LEVEL`                  | Sets the logging level of the application          | INFO          |
-| `POLLING_INTERVAL`           | Time in seconds between fetching new data          | 10            |
-| `GROWATT_USERNAME`           | Your Growatt account username (required)           | -             |
-| `GROWATT_PASSWORD`           | Your Growatt account password (required)           | -             |
-| `MQTT_HOST`                  | Address of your MQTT broker (required)             | -             |
-| `MQTT_PORT`                  | Port number of your MQTT broker                    | 1883          |
-| `MQTT_CLIENT_ID`             | Identifier for the MQTT client                     | noah-mqtt     |
-| `MQTT_USERNAME`              | Username for connecting to your MQTT broker        | -             |
-| `MQTT_PASSWORD`              | Password for connecting to your MQTT broker        | -             |
-| `MQTT_TOPIC_PREFIX`          | Prefix for MQTT topics used by Noah-mqtt           | noah2mqtt     |
-| `HOMEASSISTANT_TOPIC_PREFIX` | Prefix for topics used by Home Assistant           | homeassistant |
+| Environment Variable                  | Description                                                                                                                                        | Default       |
+|:--------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|:--------------| 
+| `LOG_LEVEL`                           | Sets the logging level of the application                                                                                                          | INFO          |
+| `DETAILS_CYCLE_SKIPS`                 | To reduce request count and the probability to get locked, set the number of fetch cycles skipped fetching battery details and parameter settings. | 2             |
+| `POLLING_INTERVAL`                    | Time in seconds between fetching new data                                                                                                          | 10            |
+| `GROWATT_USERNAME`                    | Your Growatt account username (required)                                                                                                           | -             |
+| `GROWATT_PASSWORD`                    | Your Growatt account password (required)                                                                                                           | -             |
+| `MQTT_HOST`                           | Address of your MQTT broker (required)                                                                                                             | -             |
+| `MQTT_PORT`                           | Port number of your MQTT broker                                                                                                                    | 1883          |
+| `MQTT_CLIENT_ID`                      | Identifier for the MQTT client                                                                                                                     | noah-mqtt     |
+| `MQTT_USERNAME`                       | Username for connecting to your MQTT broker                                                                                                        | -             |
+| `MQTT_PASSWORD`                       | Password for connecting to your MQTT broker                                                                                                        | -             |
+| `MQTT_TOPIC_PREFIX`                   | Prefix for MQTT topics used by Noah-mqtt                                                                                                           | noah2mqtt     |
+| `HOMEASSISTANT_TOPIC_PREFIX`          | Prefix for topics used by Home Assistant                                                                                                           | homeassistant |
 
 Adjust these settings to fit your environment and requirements.
 
