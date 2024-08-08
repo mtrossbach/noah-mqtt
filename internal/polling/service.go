@@ -1,7 +1,6 @@
 package polling
 
 import (
-	"encoding/json"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"log/slog"
@@ -12,11 +11,12 @@ import (
 )
 
 type Options struct {
-	GrowattClient   *growatt.Client
-	HaClient        *homeassistant.Service
-	MqttClient      mqtt.Client
-	PollingInterval time.Duration
-	TopicPrefix     string
+	GrowattClient     *growatt.Client
+	HaClient          *homeassistant.Service
+	MqttClient        mqtt.Client
+	PollingInterval   time.Duration
+	TopicPrefix       string
+	DetailsCycleSkips int
 }
 
 type Service struct {
@@ -132,44 +132,20 @@ func (s *Service) fetchNoahSerialNumbers() []string {
 
 func (s *Service) poll() {
 	slog.Info("start polling growatt", slog.Int("interval", int(s.options.PollingInterval/time.Second)))
+	i := 0
 	for {
 		for _, serialNumber := range s.serialNumbers {
-			if data, err := s.options.GrowattClient.GetNoahStatus(serialNumber); err != nil {
-				slog.Error("could not get device data", slog.String("error", err.Error()), slog.String("device", serialNumber))
-			} else {
-				if b, err := json.Marshal(devicePayload(data)); err != nil {
-					slog.Error("could not marshal device data", slog.String("error", err.Error()), slog.String("device", serialNumber))
-				} else {
-					s.options.MqttClient.Publish(s.deviceStateTopic(serialNumber), 0, false, string(b))
-					slog.Debug("device data received", slog.String("data", string(b)), slog.String("device", serialNumber))
-				}
-			}
-
-			if data, err := s.options.GrowattClient.GetBatteryData(serialNumber); err != nil {
-				slog.Error("could not get battery data", slog.String("error", err.Error()), slog.String("device", serialNumber))
-			} else {
-				for i, bat := range data.Obj.Batter {
-					if b, err := json.Marshal(batteryPayload(&bat)); err != nil {
-						slog.Error("could not marshal battery data", slog.String("error", err.Error()))
-					} else {
-						s.options.MqttClient.Publish(s.stateTopicBattery(serialNumber, i), 0, false, string(b))
-						slog.Debug("battery data received", slog.String("data", string(b)), slog.String("device", serialNumber))
-					}
-				}
-			}
-
-			if data, err := s.options.GrowattClient.GetNoahInfo(serialNumber); err != nil {
-				slog.Error("could not get parameter data", slog.String("error", err.Error()), slog.String("device", serialNumber))
-			} else {
-				if b, err := json.Marshal(parameterPayload(data)); err != nil {
-					slog.Error("could not marshal parameter data", slog.String("error", err.Error()), slog.String("device", serialNumber))
-				} else {
-					s.options.MqttClient.Publish(s.parameterStateTopic(serialNumber), 0, false, string(b))
-					slog.Debug("parameter data received", slog.String("data", string(b)), slog.String("device", serialNumber))
-				}
+			s.pollStatus(serialNumber)
+			if i%(s.options.DetailsCycleSkips+1) == 0 {
+				s.pollBatteryDetails(serialNumber)
+				s.pollParameterData(serialNumber)
 			}
 		}
-
 		<-time.After(s.options.PollingInterval)
+
+		i += 1
+		if i >= 1000 {
+			i = 0
+		}
 	}
 }
