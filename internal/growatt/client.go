@@ -33,7 +33,7 @@ func NewClient(username string, password string) *Client {
 			Transport:     nil,
 			CheckRedirect: nil,
 			Jar:           jar,
-			Timeout:       30 * time.Second,
+			Timeout:       10 * time.Second,
 		},
 		username: username,
 		password: hashPassword(password),
