@@ -25,7 +25,7 @@ To run the latest version of `noah-mqtt` using Docker, follow these steps:
 3. **Execute the Docker Command**: Run the following command, replacing the placeholders with your actual values:
 
    ```
-   docker run —name noah-mqtt -e GROWATT_USERNAME=myusername -e GROWATT_PASSWORD=mypassword -e MQTT_HOST=localhost -e MQTT_PORT=1883 ghcr.io/mtrossbach/noah-mqtt:latest
+   docker run -name noah-mqtt -e GROWATT_USERNAME=myusername -e GROWATT_PASSWORD=mypassword -e MQTT_HOST=localhost -e MQTT_PORT=1883 ghcr.io/mtrossbach/noah-mqtt:latest
    ```
    
 - Replace myusername with your Growatt username.
