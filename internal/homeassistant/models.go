@@ -3,10 +3,11 @@ package homeassistant
 type DeviceClass string
 
 const (
-	DeviceClassEnergy      DeviceClass = "energy"
-	DeviceClassBattery     DeviceClass = "battery"
-	DeviceClassTemperature DeviceClass = "temperature"
-	DeviceClassPower       DeviceClass = "power"
+	DeviceClassEnergy       DeviceClass = "energy"
+	DeviceClassBattery      DeviceClass = "battery"
+	DeviceClassTemperature  DeviceClass = "temperature"
+	DeviceClassPower        DeviceClass = "power"
+	DeviceClassConnectivity DeviceClass = "connectivity"
 )
 
 type StateClass string
@@ -33,6 +34,19 @@ const (
 	IconBatteryMinus Icon = "mdi:battery-minus"
 	IconCarBattery   Icon = "mdi:car-battery"
 )
+
+type BinarySensor struct {
+	Name          string      `json:"name"`
+	Icon          Icon        `json:"icon,omitempty"`
+	DeviceClass   DeviceClass `json:"device_class,omitempty"`
+	ValueTemplate string      `json:"value_template,omitempty"`
+	UniqueId      string      `json:"unique_id,omitempty"`
+	PayloadOff    string      `json:"payload_off,omitempty"`
+	PayloadOn     string      `json:"payload_on,omitempty"`
+	StateTopic    string      `json:"state_topic"`
+	Device        Device      `json:"device,omitempty"`
+	Origin        Origin      `json:"origin,omitempty"`
+}
 
 type Sensor struct {
 	Name              string      `json:"name"`

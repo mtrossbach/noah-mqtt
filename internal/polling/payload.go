@@ -17,7 +17,15 @@ func devicePayload(n *growatt.NoahStatus) models.DevicePayload {
 		GenerationTotalEnergy: parseFloat(n.Obj.EacTotal),
 		GenerationTodayEnergy: parseFloat(n.Obj.EacToday),
 		WorkMode:              workModeFromString(n.Obj.WorkMode),
+		Status:                onlineFromString(n.Obj.Status),
 	}
+}
+
+func onlineFromString(s string) string {
+	if s == "1" {
+		return models.Online
+	}
+	return models.Offline
 }
 
 func workModeFromString(s string) models.WorkMode {

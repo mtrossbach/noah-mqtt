@@ -5,6 +5,8 @@ type WorkMode string
 const (
 	WorkModeLoadFirst    = "load_first"
 	WorkModeBatteryFirst = "battery_first"
+	Online               = "online"
+	Offline              = "offline"
 )
 
 type DevicePayload struct {
@@ -16,7 +18,8 @@ type DevicePayload struct {
 	BatteryNum            int      `json:"battery_num"`
 	GenerationTotalEnergy float64  `json:"generation_total_kwh"`
 	GenerationTodayEnergy float64  `json:"generation_today_kwh"`
-	WorkMode              WorkMode `json:"work_mode,omitempty,omitempty"`
+	WorkMode              WorkMode `json:"work_mode,omitempty"`
+	Status                string   `json:"status,omitempty"`
 }
 
 type BatteryPayload struct {

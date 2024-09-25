@@ -55,7 +55,7 @@ type NoahStatus struct {
 		Alias           string `json:"alias"`
 		ProfitTotal     string `json:"profitTotal"`
 		MoneyUnit       string `json:"moneyUnit"`
-		Status          string `json:"status"`
+		Status          string `json:"status"` // 1 = online, -1 = offline
 	}]
 }
 

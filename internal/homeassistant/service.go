@@ -60,11 +60,25 @@ func (s *Service) sendDiscovery() {
 				s.options.MqttClient.Publish(topic, 0, false, string(b))
 			}
 		}
+
+		binarySensors := generateBinarySensorDiscoveryPayload(s.options.Version, d)
+		for _, sensor := range binarySensors {
+			if b, err := json.Marshal(sensor); err != nil {
+				slog.Error("could not marshal binary sensor discovery payload", slog.Any("sensor", sensor))
+			} else {
+				topic := s.binarySensorTopic(sensor)
+				s.options.MqttClient.Publish(topic, 0, false, string(b))
+			}
+		}
 	}
 }
 
 func (s *Service) sensorTopic(sensor Sensor) string {
 	return fmt.Sprintf("%s/sensor/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
+}
+
+func (s *Service) binarySensorTopic(sensor BinarySensor) string {
+	return fmt.Sprintf("%s/binary_sensor/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
 }
 
 func (s *Service) numberTopic(number Number) string {
