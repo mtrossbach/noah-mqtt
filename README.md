@@ -1,14 +1,14 @@
 # noah-mqtt
 ![License](https://img.shields.io/github/license/mtrossbach/noah-mqtt) ![GitHub last commit](https://img.shields.io/github/last-commit/mtrossbach/noah-mqtt) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/mtrossbach/noah-mqtt)
 
-UNDER CONSTRUCTION!
-
 `noah-mqtt` is a standalone application designed to retrieve data and metrics from your Growatt NOAH 2000 home battery used in balcony power plants. It publishes this information to an MQTT broker, making it easily accessible for Home Assistant or other applications.
 
 The application features Home Assistant auto-discovery, allowing your NOAH devices to be automatically recognized and integrated with Home Assistant via the MQTT integration.
 
 
 # ![HomeAssistant screenshot](/assets/ha-screenshot.png)
+
+---
 
 # Run the application standalone
 
@@ -90,9 +90,11 @@ To compile the binary yourself, ensure you have Go installed on your machine:
 
 Afterwards follow the instructions for running the application from option 2.
 
+---
 
 # Integration into HomeAssistant
 
+## Run standalone (Home Assistant Container, Home Assistant Core)
 `noah-mqtt` interacts with Home Assistant by publishing data from your Growatt NOAH 2000 home battery to an MQTT broker. This setup allows Home Assistant to subscribe to and integrate this data seamlessly into its ecosystem.
 
 ![Home Assistant Integration](./assets/noah-mqtt-ha-dark.drawio.png#gh-dark-mode-only)
@@ -119,6 +121,40 @@ The following integration process for `noah-mqtt` with Home Assistant works for 
 
 By following these steps, `noah-mqtt` will communicate with Home Assistant via your MQTT broker, also supporting automatic device discovery. If you already have MQTT set up, it should integrate seamlessly with your existing configuration.
 
+## Run as Home Assistant add-on (Home Assistant OS, Home Assistant Supervised)
+
+If you are using Home Assistant OS or Home Assistant Supervised you can run `noah-mqtt` as a Home Assistant add-on, which provides seamless integration with your Home Assistant setup.
+This option leverages the add-on system to manage and run `noah-mqtt` directly on your Home Assistant instance.
+
+#### Steps to Use the Home Assistant Add-on
+0. **Prerequisite:**
+   - Have the Mosquitto Add-on installed and running -or- have a separate MQTT running
+   - Home Assistant MQTT integration enabled
+
+1. **Add the Repository:**
+   - Open your Home Assistant web interface.
+   - Navigate to **Settings** > **Add-ons** > **Add-on Store**.
+   - Click on the three-dot menu in the top right corner and select **Repositories**.
+   - Add the following URL: `https://github.com/mtrossbach/hassio-addons`.
+
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmtrossbach%2Fhassio-addons)
+
+2. **Install the Add-on:**
+   - Search for the `noah-mqtt` add-on within the Add-on Store.
+   - Click on the add-on and select **Install**.
+
+3. **Configure the Add-on:**
+   - After installation, configure the add-on settings by providing your **Growatt username** and **Growatt password** and setup the other options as needed.
+   - If you do not use the Mosquitto Add-on, please also define your MQTT settings
+4. **Start the Add-on:**
+   - Click **Start** to launch the `noah-mqtt` add-on.
+
+The Home Assistant add-on provides an easy and integrated way to run `noah-mqtt`, allowing you to manage it directly from the Home Assistant interface.
+
+For more detailed information and updates, visit the [repository](https://github.com/mtrossbach/hassio-addons).
+
+---
+
 # Configuration
 
 You can configure `noah-mqtt` using the following environment variables:
@@ -141,32 +177,73 @@ You can configure `noah-mqtt` using the following environment variables:
 
 Adjust these settings to fit your environment and requirements.
 
+---
 
-# Run as Home Assistant add-on (Home Assistant OS, Home Assistant Supervised)
+# Data provided by noah-mqtt
 
-If you are using Home Assistant OS or Home Assistant Supervised you can run `noah-mqtt` as a Home Assistant add-on, which provides seamless integration with your Home Assistant setup.
-This option leverages the add-on system to manage and run `noah-mqtt` directly on your Home Assistant instance.
+## Published Topics
 
-#### Steps to Use the Home Assistant Add-on
+The following MQTT topics are used by `noah-mqtt` to publish data:
 
-1. **Add the Repository:**
-   - Open your Home Assistant web interface.
-   - Navigate to **Settings** > **Add-ons** > **Add-on Store**.
-   - Click on the three-dot menu in the top right corner and select **Repositories**.
-   - Add the following URL: `https://github.com/mtrossbach/hassio-addons`.
+### 1. General Device Data
+- **Topic:** `noah2mqtt/{DEVICE_SERIAL}`
+- **Description:** This topic contains general data about the device.
+- **Example:** `noah2mqtt/0ABC00AA15AA00AA`
+- **Example Payload:**
+```json
+{
+  "output_w": 398, // current output power in watts
+  "solar_w": 102, // current solar generation power in watts
+  "soc": 40, // current state of charge of the whole appliance
+  "charge_w": 0, // current charging power in watts
+  "discharge_w": 314, // current discharge power in watts
+  "battery_num": 2, // number of batteries
+  "generation_total_kwh": 319.8, // total energy generation
+  "generation_today_kwh": 3.1, // engery generation today
+  "work_mode": "load_first", // current work mode: load_first or battery_first
+  "status": "online" // connectivity status: online or offline
+}
+```
 
-[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmtrossbach%2Fhassio-addons)
+### 2. Battery Information
+- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/BAT{BAT_NR}`
+- **Description:** This topic contains information about the device's batteries. Replace `{BAT_NR}` with the battery number (e.g., BAT0, BAT1, BAT2, etc.).
+- **Example:** `noah2mqtt/0ABC00AA15AA00AA/BAT0`
+- **Example Payload:**
+```json
+{
+   "serial": "0ABC00AA15AA00AA", // battery serial number
+   "soc": 42, // current state of charge of this battery
+   "temp": 26 // current temperatur of this battery
+}
+```
 
-2. **Install the Add-on:**
-   - Search for the `noah-mqtt` add-on within the Add-on Store.
-   - Click on the add-on and select **Install**.
+### 3. Device Configuration
+- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/parameters`
+- **Description:** This topic contains the current configuration parameters of the device.
+- **Example:** `noah2mqtt/0ABC00AA15AA00AA/parameters`
+- **Example Payload:**
+```json
+{
+   "charging_limit": 100, // battery charging limit in percent, between 70 and 100
+   "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
+   "output_power_w": 800 // system output power in watts, between 0 and 800 
+}
+```
 
-3. **Configure the Add-on:**
-   - After installation, configure the add-on settings by providing your **Growatt username** and **Growatt password** and setup the other options as needed.
+## Setting Device Configuration
 
-4. **Start the Add-on:**
-   - Click **Start** to launch the `noah-mqtt` add-on.
+You can update the device's configuration settings by posting a message to the following topic:
 
-The Home Assistant add-on provides an easy and integrated way to run `noah-mqtt`, allowing you to manage it directly from the Home Assistant interface.
-
-For more detailed information and updates, visit the [repository](https://github.com/mtrossbach/hassio-addons).
+- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/parameters/set`
+- **Description:** Send configuration settings to this topic to update the device's parameters. 
+- **Note:** If you want to change the charging limit you always have to set `charging_limit` and `discharge_limit`. 
+- **Example:** `noah2mqtt/1234567890/parameters/set`
+- **Example Payload:**
+```json
+{
+   "charging_limit": 100, // battery charging limit in percent, between 70 and 100
+   "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
+   "output_power_w": 800 // system output power in watts, between 0 and 800 
+}
+```
