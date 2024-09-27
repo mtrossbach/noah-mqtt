@@ -5,8 +5,9 @@
 
 The application features Home Assistant auto-discovery, allowing your NOAH devices to be automatically recognized and integrated with Home Assistant via the MQTT integration.
 
-
 # ![HomeAssistant screenshot](/assets/ha-screenshot.png)
+
+🌟 If you find my project helpful, please consider giving me a star on GitHub! Your support motivates me to improve and delve deeper into enhancing the project. Thank you!
 
 ---
 
