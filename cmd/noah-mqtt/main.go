@@ -36,7 +36,7 @@ func main() {
 	}
 
 	connectMqtt(cfg.Mqtt, func(client mqtt.Client) {
-		growattClient := growatt.NewClient(cfg.Growatt.Username, cfg.Growatt.Password)
+		growattClient := growatt.NewClient(cfg.Growatt.ServerUrl, cfg.Growatt.Username, cfg.Growatt.Password)
 		haService := homeassistant.NewService(homeassistant.Options{
 			MqttClient:  client,
 			TopicPrefix: cfg.HomeAssistant.TopicPrefix,

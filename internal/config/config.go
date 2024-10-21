@@ -19,8 +19,9 @@ type Config struct {
 }
 
 type Growatt struct {
-	Username string
-	Password string
+	ServerUrl string
+	Username  string
+	Password  string
 }
 
 type Mqtt struct {
@@ -47,8 +48,9 @@ func Get() Config {
 			BatteryDetailsPollingInterval: time.Duration(s2i(getEnv("BATTERY_DETAILS_POLLING_INTERVAL", "60"))) * time.Second,
 			ParameterPollingInterval:      time.Duration(s2i(getEnv("PARAMETER_POLLING_INTERVAL", "60"))) * time.Second,
 			Growatt: Growatt{
-				Username: getEnv("GROWATT_USERNAME", ""),
-				Password: getEnv("GROWATT_PASSWORD", ""),
+				ServerUrl: getEnv("GROWATT_SERVER_URL", ""),
+				Username:  getEnv("GROWATT_USERNAME", ""),
+				Password:  getEnv("GROWATT_PASSWORD", ""),
 			},
 			Mqtt: Mqtt{
 				Host:        getEnv("MQTT_HOST", ""),

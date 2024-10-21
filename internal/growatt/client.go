@@ -12,10 +12,9 @@ import (
 	"time"
 )
 
-const growattUrl = "https://server-api.growatt.com"
-
 type Client struct {
 	client    *http.Client
+	serverUrl string
 	username  string
 	password  string
 	userAgent string
@@ -24,12 +23,18 @@ type Client struct {
 	jar       *cookiejar.Jar
 }
 
-func NewClient(username string, password string) *Client {
+func NewClient(serverUrl string, username string, password string) *Client {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		slog.Error("could not create cookie jar", slog.String("error", err.Error()))
 		misc.Panic(err)
 	}
+
+	if len(serverUrl) == 0 {
+		serverUrl = "https://server-api.growatt.com"
+	}
+
+	slog.Info("setting server url", slog.String("url", serverUrl))
 
 	return &Client{
 		client: &http.Client{
@@ -38,9 +43,10 @@ func NewClient(username string, password string) *Client {
 			Jar:           jar,
 			Timeout:       10 * time.Second,
 		},
-		username: username,
-		password: hashPassword(password),
-		jar:      jar,
+		serverUrl: serverUrl,
+		username:  username,
+		password:  hashPassword(password),
+		jar:       jar,
 	}
 }
 
@@ -65,7 +71,7 @@ func (h *Client) Login() error {
 	}
 
 	var data LoginResult
-	if _, err := h.postForm(growattUrl+"/newTwoLoginAPIV2.do", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/newTwoLoginAPIV2.do", url.Values{
 		"userName":          {h.username},
 		"password":          {h.password},
 		"newLogin":          {"1"},
@@ -93,7 +99,7 @@ func (h *Client) Login() error {
 
 func (h *Client) GetPlantList() (*PlantListV2, error) {
 	var data PlantListV2
-	if _, err := h.postForm(growattUrl+"/newTwoPlantAPI.do?op=getAllPlantListTwo", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/newTwoPlantAPI.do?op=getAllPlantListTwo", url.Values{
 		"plantStatus": {""},
 		"pageSize":    {"20"},
 		"language":    {"1"},
@@ -107,7 +113,7 @@ func (h *Client) GetPlantList() (*PlantListV2, error) {
 
 func (h *Client) GetNoahPlantInfo(plantId string) (*NoahPlantInfo, error) {
 	var data NoahPlantInfo
-	if _, err := h.postForm(growattUrl+"/noahDeviceApi/noah/isPlantNoahSystem", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/isPlantNoahSystem", url.Values{
 		"plantId": {plantId},
 	}, &data); err != nil {
 		return nil, err
@@ -117,7 +123,7 @@ func (h *Client) GetNoahPlantInfo(plantId string) (*NoahPlantInfo, error) {
 
 func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 	var data NoahStatus
-	if _, err := h.postForm(growattUrl+"/noahDeviceApi/noah/getSystemStatus", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/getSystemStatus", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -127,7 +133,7 @@ func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 
 func (h *Client) GetNoahInfo(serialNumber string) (*NoahInfo, error) {
 	var data NoahInfo
-	if _, err := h.postForm(growattUrl+"/noahDeviceApi/noah/getNoahInfoBySn", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/getNoahInfoBySn", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -138,7 +144,7 @@ func (h *Client) GetNoahInfo(serialNumber string) (*NoahInfo, error) {
 
 func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 	var data BatteryInfo
-	if _, err := h.postForm(growattUrl+"/noahDeviceApi/noah/getBatteryData", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/getBatteryData", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -150,7 +156,7 @@ func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 func (h *Client) SetDefaultPower(serialNumber string, power float64) error {
 	p := math.Max(0, math.Min(800, power))
 	var data map[string]any
-	if _, err := h.postForm(growattUrl+"/noahDeviceApi/noah/set", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"default_power"},
 		"param1":    {fmt.Sprintf("%.0f", p)},
@@ -165,7 +171,7 @@ func (h *Client) SetSocLimit(serialNumber string, chargingLimit float64, dischar
 	c := math.Max(70, math.Min(100, chargingLimit))
 	d := math.Max(0, math.Min(30, dischargeLimit))
 	var data map[string]any
-	if _, err := h.postForm(growattUrl+"/noahDeviceApi/noah/set", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"charging_soc"},
 		"param1":    {fmt.Sprintf("%.0f", c)},
