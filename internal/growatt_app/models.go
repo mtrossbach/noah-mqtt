@@ -1,4 +1,4 @@
-package growatt
+package growatt_app
 
 type TokenResponse struct {
 	Code  int    `json:"code"`

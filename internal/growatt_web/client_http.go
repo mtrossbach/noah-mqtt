@@ -1,4 +1,4 @@
-package growatt
+package growatt_web
 
 import (
 	"encoding/json"
@@ -17,10 +17,7 @@ func (h *Client) postForm(url string, data url.Values, responseBody any) (*http.
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	if len(h.token) > 0 {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", h.token))
-	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/27.0 Chrome/125.0.0.0 Mobile Safari/537.36")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
 	resp, err := h.client.Do(req)
 	if err != nil {
 		return nil, err

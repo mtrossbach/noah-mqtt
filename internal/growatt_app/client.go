@@ -1,4 +1,4 @@
-package growatt
+package growatt_app
 
 import (
 	"fmt"
@@ -23,18 +23,14 @@ type Client struct {
 	jar       *cookiejar.Jar
 }
 
-func NewClient(serverUrl string, username string, password string) *Client {
+func newClient(serverUrl string, username string, password string) *Client {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		slog.Error("could not create cookie jar", slog.String("error", err.Error()))
 		misc.Panic(err)
 	}
 
-	if len(serverUrl) == 0 {
-		serverUrl = "https://server-api.growatt.com"
-	}
-
-	slog.Info("setting server url", slog.String("url", serverUrl))
+	slog.Info("setting server url (app)", slog.String("url", serverUrl))
 
 	return &Client{
 		client: &http.Client{

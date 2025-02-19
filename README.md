@@ -1,5 +1,5 @@
-> [!CAUTION]
-> ⚠️ Growatt is currently deploying IP blocking measures.  Using this application is not recommended at this time. If you must use it, significantly reduce your request interval. Stay tuned for updates.
+> [!IMPORTANT]  
+> 🎉 noah-mqtt has been updated to (hopefully!) mitigate Growatt IP bans for most users!  A new `web` API mode using Growatt's website APIs is now available via the `GROWATT_API_MODE` configuration parameter. The default mode is `web+app` (web API for data, app API for parameters). The default fetch frequency has also been increased to 30 seconds. The default fetch frequency for detail data has been increased to 180 seconds.
 
 # noah-mqtt
 ![License](https://img.shields.io/github/license/mtrossbach/noah-mqtt) ![GitHub last commit](https://img.shields.io/github/last-commit/mtrossbach/noah-mqtt) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/mtrossbach/noah-mqtt)
@@ -11,6 +11,111 @@ The application features Home Assistant auto-discovery, allowing your NOAH devic
 # ![HomeAssistant screenshot](/assets/ha-screenshot.png)
 
 🌟 If you find my project helpful, please consider giving me a star on GitHub! Your support motivates me to improve and delve deeper into enhancing the project. Thank you!
+
+---
+
+# Configuration
+
+`noah-mqtt` supports three API modes:
+
+*   **`app`**: (previous default) This mode utilizes the Shine App APIs.  These APIs offer faster data updates and support setting parameters. However, they are the least stable, as they are prone to change with new app updates.  They are also subject to strict rate limits, which may result in IP bans.
+*   **`web`**: This mode uses the Growatt Website APIs. These APIs provide a more stable way to fetch data.  Setting parameters is not supported in this mode.
+*   **`web+app`**: (current default) This mode combines the best of both worlds. It uses the Growatt Website APIs for data fetching (for stability) and the App APIs for setting parameters.
+
+
+You can configure `noah-mqtt` using the following environment variables:
+
+| Environment Variable               | Description                                                                             | Default                        |
+|:-----------------------------------|:----------------------------------------------------------------------------------------|:-------------------------------| 
+| `LOG_LEVEL`                        | Sets the logging level of the application                                               | INFO                           |
+| `POLLING_INTERVAL`                 | Time in seconds between fetching new status data                                        | 30                             |
+| `BATTERY_DETAILS_POLLING_INTERVAL` | Time in seconds between fetching battery details (per battery SoC & temperature).       | 180                            |
+| `PARAMETER_POLLING_INTERVAL`       | Time in seconds between fetching parameter data (system-output-power, charging limits). | 180                            |
+| `GROWATT_API_MODE`                 | Growatt API mode, either `app`, `web`, `web+app`                                        | web+app                        |
+| `GROWATT_USERNAME`                 | Your Growatt account username (required)                                                | -                              |
+| `GROWATT_PASSWORD`                 | Your Growatt account password (required)                                                | -                              |
+| `GROWATT_SERVER_URL_WEB`           | Growatt server url for web apis                                                         | https://openapi.growatt.com    |
+| `GROWATT_SERVER_URL_APP`           | Growatt server url for app apis                                                         | https://server-api.growatt.com |
+| `MQTT_HOST`                        | Address of your MQTT broker (required)                                                  | -                              |
+| `MQTT_PORT`                        | Port number of your MQTT broker                                                         | 1883                           |
+| `MQTT_CLIENT_ID`                   | Identifier for the MQTT client                                                          | noah-mqtt                      |
+| `MQTT_USERNAME`                    | Username for connecting to your MQTT broker                                             | -                              |
+| `MQTT_PASSWORD`                    | Password for connecting to your MQTT broker                                             | -                              |
+| `MQTT_TOPIC_PREFIX`                | Prefix for MQTT topics used by Noah-mqtt                                                | noah2mqtt                      |
+| `HOMEASSISTANT_TOPIC_PREFIX`       | Prefix for topics used by Home Assistant                                                | homeassistant                  |
+
+Adjust these settings to fit your environment and requirements.
+
+---
+
+# Data provided by noah-mqtt
+
+## Published Topics
+
+The following MQTT topics are used by `noah-mqtt` to publish data:
+
+### 1. General Device Data
+- **Topic:** `noah2mqtt/{DEVICE_SERIAL}`
+- **Description:** This topic contains general data about the device.
+- **Example:** `noah2mqtt/0ABC00AA15AA00AA`
+- **Example Payload:**
+```json
+{
+  "output_w": 398, // current output power in watts
+  "solar_w": 102, // current solar generation power in watts
+  "soc": 40, // current state of charge of the whole appliance
+  "charge_w": 0, // current charging power in watts
+  "discharge_w": 314, // current discharge power in watts
+  "battery_num": 2, // number of batteries
+  "generation_total_kwh": 319.8, // total energy generation
+  "generation_today_kwh": 3.1, // engery generation today
+  "work_mode": "load_first", // current work mode: load_first or battery_first
+  "status": "online" // connectivity status: online or offline
+}
+```
+
+### 2. Battery Information
+- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/BAT{BAT_NR}`
+- **Description:** This topic contains information about the device's batteries. Replace `{BAT_NR}` with the battery number (e.g., BAT0, BAT1, BAT2, etc.).
+- **Example:** `noah2mqtt/0ABC00AA15AA00AA/BAT0`
+- **Example Payload:**
+```json
+{
+   "serial": "0ABC00AA15AA00AA", // battery serial number
+   "soc": 42, // current state of charge of this battery
+   "temp": 26 // current temperatur of this battery
+}
+```
+
+### 3. Device Configuration
+- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/parameters`
+- **Description:** This topic contains the current configuration parameters of the device.
+- **Example:** `noah2mqtt/0ABC00AA15AA00AA/parameters`
+- **Example Payload:**
+```json
+{
+   "charging_limit": 100, // battery charging limit in percent, between 70 and 100
+   "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
+   "output_power_w": 800 // system output power in watts, between 0 and 800 
+}
+```
+
+## Setting Device Parameters
+
+You can update the device's parameter settings by posting a message to the following topic:
+
+- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/parameters/set`
+- **Description:** Send configuration settings to this topic to update the device's parameters.
+- **Example:** `noah2mqtt/1234567890/parameters/set`
+- **Example Payload:**
+```json
+{
+   "charging_limit": 100, // battery charging limit in percent, between 70 and 100
+   "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
+   "output_power_w": 800 // system output power in watts, between 0 and 800 
+}
+```
+
 
 ---
 
@@ -157,97 +262,3 @@ The Home Assistant add-on provides an easy and integrated way to run `noah-mqtt`
 
 For more detailed information and updates, visit the [repository](https://github.com/mtrossbach/hassio-addons).
 
----
-
-# Configuration
-
-You can configure `noah-mqtt` using the following environment variables:
-
-| Environment Variable                              | Description                                                                             | Default                        |
-|:--------------------------------------------------|:----------------------------------------------------------------------------------------|:-------------------------------| 
-| `LOG_LEVEL`                                       | Sets the logging level of the application                                               | INFO                           |
-| `POLLING_INTERVAL`                                | Time in seconds between fetching new status data                                        | 10                             |
-| `BATTERY_DETAILS_POLLING_INTERVAL`                | Time in seconds between fetching battery details (per battery SoC & temperature).       | 60                             |
-| `PARAMETER_POLLING_INTERVAL`                      | Time in seconds between fetching parameter data (system-output-power, charging limits). | 60                             |
-| `GROWATT_USERNAME`                                | Your Growatt account username (required)                                                | -                              |
-| `GROWATT_PASSWORD`                                | Your Growatt account password (required)                                                | -                              |
-| `GROWATT_SERVER_URL`                              | Your Growatt account password (required)                                                | https://server-api.growatt.com |
-| `MQTT_HOST`                                       | Address of your MQTT broker (required)                                                  | -                              |
-| `MQTT_PORT`                                       | Port number of your MQTT broker                                                         | 1883                           |
-| `MQTT_CLIENT_ID`                                  | Identifier for the MQTT client                                                          | noah-mqtt                      |
-| `MQTT_USERNAME`                                   | Username for connecting to your MQTT broker                                             | -                              |
-| `MQTT_PASSWORD`                                   | Password for connecting to your MQTT broker                                             | -                              |
-| `MQTT_TOPIC_PREFIX`                               | Prefix for MQTT topics used by Noah-mqtt                                                | noah2mqtt                      |
-| `HOMEASSISTANT_TOPIC_PREFIX`                      | Prefix for topics used by Home Assistant                                                | homeassistant                  |
-
-Adjust these settings to fit your environment and requirements.
-
----
-
-# Data provided by noah-mqtt
-
-## Published Topics
-
-The following MQTT topics are used by `noah-mqtt` to publish data:
-
-### 1. General Device Data
-- **Topic:** `noah2mqtt/{DEVICE_SERIAL}`
-- **Description:** This topic contains general data about the device.
-- **Example:** `noah2mqtt/0ABC00AA15AA00AA`
-- **Example Payload:**
-```json
-{
-  "output_w": 398, // current output power in watts
-  "solar_w": 102, // current solar generation power in watts
-  "soc": 40, // current state of charge of the whole appliance
-  "charge_w": 0, // current charging power in watts
-  "discharge_w": 314, // current discharge power in watts
-  "battery_num": 2, // number of batteries
-  "generation_total_kwh": 319.8, // total energy generation
-  "generation_today_kwh": 3.1, // engery generation today
-  "work_mode": "load_first", // current work mode: load_first or battery_first
-  "status": "online" // connectivity status: online or offline
-}
-```
-
-### 2. Battery Information
-- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/BAT{BAT_NR}`
-- **Description:** This topic contains information about the device's batteries. Replace `{BAT_NR}` with the battery number (e.g., BAT0, BAT1, BAT2, etc.).
-- **Example:** `noah2mqtt/0ABC00AA15AA00AA/BAT0`
-- **Example Payload:**
-```json
-{
-   "serial": "0ABC00AA15AA00AA", // battery serial number
-   "soc": 42, // current state of charge of this battery
-   "temp": 26 // current temperatur of this battery
-}
-```
-
-### 3. Device Configuration
-- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/parameters`
-- **Description:** This topic contains the current configuration parameters of the device.
-- **Example:** `noah2mqtt/0ABC00AA15AA00AA/parameters`
-- **Example Payload:**
-```json
-{
-   "charging_limit": 100, // battery charging limit in percent, between 70 and 100
-   "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "output_power_w": 800 // system output power in watts, between 0 and 800 
-}
-```
-
-## Setting Device Configuration
-
-You can update the device's configuration settings by posting a message to the following topic:
-
-- **Topic:** `noah2mqtt/{DEVICE_SERIAL}/parameters/set`
-- **Description:** Send configuration settings to this topic to update the device's parameters. 
-- **Example:** `noah2mqtt/1234567890/parameters/set`
-- **Example Payload:**
-```json
-{
-   "charging_limit": 100, // battery charging limit in percent, between 70 and 100
-   "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "output_power_w": 800 // system output power in watts, between 0 and 800 
-}
-```

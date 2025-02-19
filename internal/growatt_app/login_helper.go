@@ -1,4 +1,4 @@
-package growatt
+package growatt_app
 
 import (
 	"crypto/md5"

@@ -19,9 +19,11 @@ type Config struct {
 }
 
 type Growatt struct {
-	ServerUrl string
-	Username  string
-	Password  string
+	APIMode      string
+	ServerUrlWeb string
+	ServerUrlApp string
+	Username     string
+	Password     string
 }
 
 type Mqtt struct {
@@ -44,13 +46,15 @@ func Get() Config {
 	_once.Do(func() {
 		_config = Config{
 			LogLevel:                      getEnv("LOG_LEVEL", "info"),
-			PollingInterval:               time.Duration(s2i(getEnv("POLLING_INTERVAL", "10"))) * time.Second,
-			BatteryDetailsPollingInterval: time.Duration(s2i(getEnv("BATTERY_DETAILS_POLLING_INTERVAL", "60"))) * time.Second,
-			ParameterPollingInterval:      time.Duration(s2i(getEnv("PARAMETER_POLLING_INTERVAL", "60"))) * time.Second,
+			PollingInterval:               time.Duration(s2i(getEnv("POLLING_INTERVAL", "30"))) * time.Second,
+			BatteryDetailsPollingInterval: time.Duration(s2i(getEnv("BATTERY_DETAILS_POLLING_INTERVAL", "180"))) * time.Second,
+			ParameterPollingInterval:      time.Duration(s2i(getEnv("PARAMETER_POLLING_INTERVAL", "180"))) * time.Second,
 			Growatt: Growatt{
-				ServerUrl: getEnv("GROWATT_SERVER_URL", ""),
-				Username:  getEnv("GROWATT_USERNAME", ""),
-				Password:  getEnv("GROWATT_PASSWORD", ""),
+				APIMode:      getEnv("GROWATT_API_MODE", "web+app"),
+				ServerUrlWeb: getEnv("GROWATT_SERVER_URL_WEB", "https://openapi.growatt.com"),
+				ServerUrlApp: getEnv("GROWATT_SERVER_URL_APP", "https://server-api.growatt.com"),
+				Username:     getEnv("GROWATT_USERNAME", ""),
+				Password:     getEnv("GROWATT_PASSWORD", ""),
 			},
 			Mqtt: Mqtt{
 				Host:        getEnv("MQTT_HOST", ""),
