@@ -9,6 +9,7 @@ const (
 	DeviceClassTemperature  DeviceClass = "temperature"
 	DeviceClassPower        DeviceClass = "power"
 	DeviceClassConnectivity DeviceClass = "connectivity"
+	DeviceClassEnum         DeviceClass = "enum"
 )
 
 type StateClass string
@@ -39,32 +40,6 @@ const (
 	IconBatteryArrowDownOutline Icon = "mdi:battery-arrow-down-outline"
 )
 
-type BinarySensor struct {
-	Name          string      `json:"name"`
-	Icon          Icon        `json:"icon,omitempty"`
-	DeviceClass   DeviceClass `json:"device_class,omitempty"`
-	ValueTemplate string      `json:"value_template,omitempty"`
-	UniqueId      string      `json:"unique_id,omitempty"`
-	PayloadOff    string      `json:"payload_off,omitempty"`
-	PayloadOn     string      `json:"payload_on,omitempty"`
-	StateTopic    string      `json:"state_topic"`
-	Device        Device      `json:"device,omitempty"`
-	Origin        Origin      `json:"origin,omitempty"`
-}
-
-type Sensor struct {
-	Name              string      `json:"name"`
-	Icon              Icon        `json:"icon,omitempty"`
-	DeviceClass       DeviceClass `json:"device_class,omitempty"`
-	StateTopic        string      `json:"state_topic"`
-	StateClass        StateClass  `json:"state_class,omitempty"`
-	UnitOfMeasurement Unit        `json:"unit_of_measurement,omitempty"`
-	ValueTemplate     string      `json:"value_template,omitempty"`
-	UniqueId          string      `json:"unique_id,omitempty"`
-	Device            Device      `json:"device,omitempty"`
-	Origin            Origin      `json:"origin,omitempty"`
-}
-
 type Device struct {
 	Identifiers  []string `json:"identifiers,omitempty"`
 	Name         string   `json:"name,omitempty"`
@@ -81,28 +56,65 @@ type Origin struct {
 	SupportUrl string `json:"support_url,omitempty"`
 }
 
-type Number struct {
-	Name              string      `json:"name"`
-	UniqueId          string      `json:"unique_id,omitempty"`
-	CommandTemplate   string      `json:"command_template,omitempty"`
-	CommandTopic      string      `json:"command_topic"`
-	Device            Device      `json:"device,omitempty"`
-	Origin            Origin      `json:"origin,omitempty"`
-	Icon              Icon        `json:"icon,omitempty"`
-	DeviceClass       DeviceClass `json:"device_class,omitempty"`
-	StateTopic        string      `json:"state_topic"`
-	StateClass        StateClass  `json:"state_class,omitempty"`
-	Mode              Mode        `json:"mode,omitempty"`
-	Step              float64     `json:"step,omitempty"`
-	Min               float64     `json:"min,omitempty"`
-	Max               float64     `json:"max,omitempty"`
-	UnitOfMeasurement Unit        `json:"unit_of_measurement,omitempty"`
-	ValueTemplate     string      `json:"value_template,omitempty"`
-}
-
 type Mode string
 
 const (
 	ModeBox    Mode = "box"
 	ModeSlider Mode = "slider"
 )
+
+type CommonConfig struct {
+	Name        string      `json:"name"`
+	UniqueId    string      `json:"unique_id,omitempty"`
+	Icon        Icon        `json:"icon,omitempty"`
+	DeviceClass DeviceClass `json:"device_class,omitempty"`
+	Device      Device      `json:"device,omitempty"`
+	Origin      Origin      `json:"origin,omitempty"`
+}
+
+type StateConfig struct {
+	StateTopic    string `json:"state_topic"`
+	ValueTemplate string `json:"value_template,omitempty"`
+}
+
+type CommandConfig struct {
+	CommandTopic    string `json:"command_topic,omitempty"`
+	CommandTemplate string `json:"command_template,omitempty"`
+}
+
+type BinarySensor struct {
+	CommonConfig
+	StateConfig
+	PayloadOff string `json:"payload_off,omitempty"`
+	PayloadOn  string `json:"payload_on,omitempty"`
+}
+
+type Sensor struct {
+	CommonConfig
+	StateConfig
+	StateClass        StateClass `json:"state_class,omitempty"`
+	UnitOfMeasurement Unit       `json:"unit_of_measurement,omitempty"`
+	Options           []string   `json:"options,omitempty"`
+}
+
+type Select struct {
+	CommonConfig
+	StateConfig
+	CommandConfig
+	StateClass        StateClass `json:"state_class,omitempty"`
+	UnitOfMeasurement Unit       `json:"unit_of_measurement,omitempty"`
+	Options           []string   `json:"options,omitempty"`
+	Component         string     `json:"component,omitempty"`
+}
+
+type Number struct {
+	CommonConfig
+	StateConfig
+	CommandConfig
+	StateClass        StateClass `json:"state_class,omitempty"`
+	UnitOfMeasurement Unit       `json:"unit_of_measurement,omitempty"`
+	Mode              Mode       `json:"mode,omitempty"`
+	Step              float64    `json:"step,omitempty"`
+	Min               float64    `json:"min,omitempty"`
+	Max               float64    `json:"max,omitempty"`
+}

@@ -3,9 +3,9 @@ package growatt_app
 import (
 	"fmt"
 	"log/slog"
-	"noah-mqtt/internal/endpoint"
-	"noah-mqtt/internal/misc"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/internal/endpoint"
+	"nexa-mqtt/internal/misc"
+	"nexa-mqtt/pkg/models"
 	"os"
 	"time"
 )
@@ -19,11 +19,12 @@ type Options struct {
 	ParameterPollingInterval      time.Duration
 }
 type GrowattAppService struct {
-	opts      Options
-	client    *Client
-	devices   []models.NoahDevicePayload
-	endpoints []endpoint.Endpoint
-	loggedIn  bool
+	opts     Options
+	client   *Client
+	devices  []models.NoahDevicePayload
+	endpoint endpoint.Endpoint
+	loggedIn bool
+	stop     chan bool
 }
 
 func NewGrowattAppService(options Options) *GrowattAppService {
@@ -31,6 +32,7 @@ func NewGrowattAppService(options Options) *GrowattAppService {
 		opts:     options,
 		client:   newClient(options.ServerUrl, options.Username, options.Password),
 		loggedIn: false,
+		stop:     make(chan bool),
 	}
 }
 
@@ -47,6 +49,10 @@ func (g *GrowattAppService) Login() error {
 func (g *GrowattAppService) StartPolling() {
 	g.enumerateDevices()
 	go g.poll()
+}
+
+func (g *GrowattAppService) StopPolling() {
+	g.stop <- true
 }
 
 func (g *GrowattAppService) fetchDevices() []models.NoahDevicePayload {
@@ -76,7 +82,7 @@ func (g *GrowattAppService) fetchDevices() []models.NoahDevicePayload {
 	}
 
 	if len(devices) == 0 {
-		slog.Info("no noah devices found")
+		slog.Info("no nexa devices found")
 		<-time.After(60 * time.Second)
 		os.Exit(0)
 	}
@@ -89,7 +95,7 @@ func (g *GrowattAppService) enumerateDevices() {
 
 	for i, device := range devices {
 		if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
-			slog.Error("could not noah status", slog.String("error", err.Error()), slog.String("serialNumber", device.Serial))
+			slog.Error("could not get nexa status", slog.String("error", err.Error()), slog.String("serialNumber", device.Serial))
 		} else {
 			batCount := len(data.Obj.Noah.BatSns)
 			var batteries []models.NoahDeviceBatteryPayload
@@ -108,14 +114,11 @@ func (g *GrowattAppService) enumerateDevices() {
 
 	g.devices = devices
 
-	for _, e := range g.endpoints {
-		e.SetDevices(devices)
-	}
+	g.endpoint.SetDevices(devices)
 }
 
-func (g *GrowattAppService) AddEndpoint(e endpoint.Endpoint) {
-	g.endpoints = append(g.endpoints, e)
-	e.SetParameterApplier(g)
+func (g *GrowattAppService) SetEndpoint(e endpoint.Endpoint) {
+	g.endpoint = e
 }
 
 func (g *GrowattAppService) ensureParameterLogin() bool {
@@ -128,66 +131,41 @@ func (g *GrowattAppService) ensureParameterLogin() bool {
 	return true
 }
 
-func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, power float64) bool {
-	slog.Info("trying to set default power (app)", slog.String("device", device.Serial), slog.Int("power", int(power)))
+func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, mode models.WorkMode, power float64) bool {
+	slog.Info("trying to set default system output power (app)", slog.String("device", device.Serial), slog.String("mode", string(mode)), slog.Float64("power", power))
 	if !g.ensureParameterLogin() {
-		slog.Error("unable to set default power (app)", slog.String("device", device.Serial))
+		slog.Error("unable to set default system output power (app)", slog.String("device", device.Serial))
 		return false
 	}
-	if err := g.client.SetDefaultPower(device.Serial, power); err != nil {
-		slog.Error("unable to set default power (app)", slog.String("error", err.Error()), slog.String("device", device.Serial))
+
+	modeAsInt := models.IntFromWorkMode(mode)
+	if modeAsInt < 0 {
+		slog.Error("unable to set default system output power (app). Invalid mode", slog.String("device", device.Serial), slog.String("mode", string(mode)))
+		return false
+	}
+
+	slog.Info("set default system output power (app)", slog.String("device", device.Serial), slog.Int("mode", modeAsInt), slog.Float64("power", power))
+	if err := g.client.SetSystemOutputPower(device.Serial, modeAsInt, power); err != nil {
+		slog.Error("unable to set default system output power (app)", slog.String("error", err.Error()), slog.String("device", device.Serial))
 		return false
 	} else {
-		go g.pollParameterData(device)
-		slog.Info("set default power (app)", slog.String("device", device.Serial), slog.Int("power", int(power)))
 		return true
 	}
 }
-func (g *GrowattAppService) SetChargingLimit(device models.NoahDevicePayload, limit float64) bool {
-	slog.Info("trying to set charging limit (app)", slog.String("device", device.Serial), slog.Float64("limit", limit))
+
+func (g *GrowattAppService) SetChargingLimits(device models.NoahDevicePayload, chargingLimit float64, dischargeLimit float64) bool {
+	slog.Info("trying to set charging limits (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", chargingLimit), slog.Float64("dischargeLimit", dischargeLimit))
 	if !g.ensureParameterLogin() {
-		slog.Error("unable to set charging limit (app)", slog.String("device", device.Serial))
+		slog.Error("unable to set charging limits (app)", slog.String("device", device.Serial))
 		return false
 	}
-	if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
-		slog.Error("unable to get parameter status (app)", slog.String("error", err.Error()))
+
+	slog.Info("set charging limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", chargingLimit), slog.Float64("dischargeLimit", dischargeLimit))
+	if err := g.client.SetChargingSoc(device.Serial, chargingLimit, dischargeLimit); err != nil {
+		slog.Error("unable to set charging limits (app)", slog.String("error", err.Error()))
 		return false
 	} else {
-		dl := misc.ParseFloat(data.Obj.Noah.ChargingSocLowLimit)
-
-		slog.Info("trying to set charging limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", limit), slog.Float64("dischargeLimit", dl))
-		if err := g.client.SetSocLimit(device.Serial, limit, dl); err != nil {
-			slog.Error("unable to set charging limit (app)", slog.String("error", err.Error()))
-			return false
-		} else {
-			go g.pollParameterData(device)
-			slog.Info("set charging limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", limit), slog.Float64("dischargeLimit", dl))
-			return true
-		}
-	}
-}
-
-func (g *GrowattAppService) SetDischargeLimit(device models.NoahDevicePayload, limit float64) bool {
-	slog.Info("trying to set discharge limit (app)", slog.String("device", device.Serial), slog.Float64("limit", limit))
-	if !g.ensureParameterLogin() {
-		slog.Error("unable to set discharge limit (app)", slog.String("device", device.Serial))
-		return false
-	}
-	if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
-		slog.Error("unable to get parameter status (app)", slog.String("error", err.Error()))
-		return false
-	} else {
-		cl := misc.ParseFloat(data.Obj.Noah.ChargingSocHighLimit)
-
-		slog.Info("trying to set discharge limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", cl), slog.Float64("dischargeLimit", limit))
-		if err := g.client.SetSocLimit(device.Serial, cl, limit); err != nil {
-			slog.Error("unable to set discharge limit (app)", slog.String("error", err.Error()))
-			return false
-		} else {
-			slog.Info("set discharge limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", cl), slog.Float64("dischargeLimit", limit))
-			go g.pollParameterData(device)
-			return true
-		}
+		return true
 	}
 }
 
@@ -197,30 +175,38 @@ func (g *GrowattAppService) poll() {
 		slog.Int("battery-details-interval", int(g.opts.BatteryDetailsPollingInterval/time.Second)),
 		slog.Int("parameter-interval", int(g.opts.ParameterPollingInterval/time.Second)))
 
-	go func() {
-		for {
+	tickerPolling := time.NewTicker(g.opts.PollingInterval)
+	defer tickerPolling.Stop()
+	tickerBatteryDetails := time.NewTicker(g.opts.BatteryDetailsPollingInterval)
+	defer tickerBatteryDetails.Stop()
+	tickerParameter := time.NewTicker(g.opts.ParameterPollingInterval)
+	defer tickerParameter.Stop()
+
+	for _, device := range g.devices {
+		g.pollStatus(device)
+		g.pollBatteryDetails(device)
+		g.pollParameterData(device)
+	}
+
+	for {
+		select {
+		case <-tickerPolling.C:
 			for _, device := range g.devices {
 				g.pollStatus(device)
 			}
-			<-time.After(g.opts.PollingInterval)
-		}
-	}()
 
-	go func() {
-		for {
+		case <-tickerBatteryDetails.C:
 			for _, device := range g.devices {
 				g.pollBatteryDetails(device)
 			}
-			<-time.After(g.opts.BatteryDetailsPollingInterval)
-		}
-	}()
 
-	go func() {
-		for {
+		case <-tickerParameter.C:
 			for _, device := range g.devices {
 				g.pollParameterData(device)
 			}
-			<-time.After(g.opts.ParameterPollingInterval)
+		case <-g.stop:
+			slog.Info("stop polling growatt (app)")
+			return
 		}
-	}()
+	}
 }

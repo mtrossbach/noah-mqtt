@@ -1,7 +1,10 @@
-project_name: noah-mqtt
+project_name: nexa-mqtt
+version: 2
+
 before:
   hooks:
     - go mod tidy
+
 builds:
   - env:
     - CGO_ENABLED=0
@@ -13,11 +16,13 @@ builds:
       - darwin_arm64
       - windows_amd64
       - windows_arm64
-    main: ./cmd/noah-mqtt
+    main: ./cmd/nexa-mqtt
+
 archives:
   - files:
     - LICENSE
     - passwd
+
 checksum:
   name_template: 'checksums.txt'
 
@@ -29,18 +34,19 @@ dockers:
       - --platform=linux/arm64/v8
       - --label=org.opencontainers.image.title={{ .ProjectName }}
       - --label=org.opencontainers.image.description={{ .ProjectName }}
-      - --label=org.opencontainers.image.url=https://github.com/mtrossbach/{{ .ProjectName }}
-      - --label=org.opencontainers.image.source=https://github.com/mtrossbach/{{ .ProjectName }}
+      - --label=org.opencontainers.image.url=https://github.com/mgerczuk/{{ .ProjectName }}
+      - --label=org.opencontainers.image.source=https://github.com/mgerczuk/{{ .ProjectName }}
       - --label=org.opencontainers.image.version={{ .Version }}
       - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=Apache-2.0
     image_templates:
-      - &arm64v8_image "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}-arm64v8"
+      - &arm64v8_image "ghcr.io/mgerczuk/{{ .ProjectName }}:{{ .Version }}-arm64v8"
     extra_files:
       - LICENSE
       - passwd
     dockerfile: Dockerfile_goreleaser
+
   - use: buildx
     goos: linux
     goarch: arm
@@ -49,18 +55,19 @@ dockers:
       - --platform=linux/arm/v6
       - --label=org.opencontainers.image.title={{ .ProjectName }}
       - --label=org.opencontainers.image.description={{ .ProjectName }}
-      - --label=org.opencontainers.image.url=https://github.com/mtrossbach/{{ .ProjectName }}
-      - --label=org.opencontainers.image.source=https://github.com/mtrossbach/{{ .ProjectName }}
+      - --label=org.opencontainers.image.url=https://github.com/mgerczuk/{{ .ProjectName }}
+      - --label=org.opencontainers.image.source=https://github.com/mgerczuk/{{ .ProjectName }}
       - --label=org.opencontainers.image.version={{ .Version }}
       - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=Apache-2.0
     image_templates:
-      - &armv6_image "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}-armv6"
+      - &armv6_image "ghcr.io/mgerczuk/{{ .ProjectName }}:{{ .Version }}-armv6"
     extra_files:
       - LICENSE
       - passwd
     dockerfile: Dockerfile_goreleaser
+
   - use: buildx
     goos: linux
     goarch: amd64
@@ -68,32 +75,58 @@ dockers:
       - --platform=linux/amd64
       - --label=org.opencontainers.image.title={{ .ProjectName }}
       - --label=org.opencontainers.image.description={{ .ProjectName }}
-      - --label=org.opencontainers.image.url=https://github.com/mtrossbach/{{ .ProjectName }}
-      - --label=org.opencontainers.image.source=https://github.com/mtrossbach/{{ .ProjectName }}
+      - --label=org.opencontainers.image.url=https://github.com/mgerczuk/{{ .ProjectName }}
+      - --label=org.opencontainers.image.source=https://github.com/mgerczuk/{{ .ProjectName }}
       - --label=org.opencontainers.image.version={{ .Version }}
       - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=Apache-2.0
     image_templates:
-      - &amd64_image "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - &amd64_image "ghcr.io/mgerczuk/{{ .ProjectName }}:{{ .Version }}-amd64"
     extra_files:
       - LICENSE
       - passwd
     dockerfile: Dockerfile_goreleaser
+
 docker_manifests:
-  - name_template: "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}"
+  - name_template: "ghcr.io/mgerczuk/{{ .ProjectName }}:{{ .Version }}"
     image_templates:
       - *arm64v8_image
       - *armv6_image
       - *amd64_image
-  - name_template: "ghcr.io/mtrossbach/{{ .ProjectName }}:latest"
+  - name_template: "ghcr.io/mgerczuk/{{ .ProjectName }}:latest"
     image_templates:
       - *arm64v8_image
       - *armv6_image
       - *amd64_image
-    
+
+nfpms:
+  - id: default
+    package_name: nexa-mqtt
+    vendor: Martin Gerczuk
+    homepage: https://github.com/mgerczuk/nexa-mqtt
+    maintainer: Martin Gerczuk <martin@mgsoftware.de>
+    description: NEXA 2000 MQTT Publisher
+    license: Apache-2.0
+    formats:
+      - deb
+    bindir: /usr/bin
+    contents:
+      - src: ./package/etc/systemd/system/nexa-mqtt.service
+        dst: /etc/systemd/system/nexa-mqtt.service
+      - src: ./package/etc/systemd/system/nexa-mqtt.service.d/override.conf
+        dst: /etc/systemd/system/nexa-mqtt.service.d/override.conf
+        type: config|noreplace
+    scripts:
+      postinstall: ./package/DEBIAN/postinst
+      preremove: ./package/DEBIAN/prerm
+      postremove: ./package/DEBIAN/postrm
+    deb:
+      scripts:
+        templates: ./package/DEBIAN/templates
+
 release:
   github:
-    owner: mtrossbach
-    name: noah-mqtt
+    owner: mgerczuk
+    name: nexa-mqtt
   draft: false

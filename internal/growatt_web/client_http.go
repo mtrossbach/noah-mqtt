@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"noah-mqtt/internal/misc"
+	"nexa-mqtt/internal/misc"
 	"strings"
 )
 

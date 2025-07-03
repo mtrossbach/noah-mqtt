@@ -1,0 +1,44 @@
+#!/bin/bash
+set -e
+. /usr/share/debconf/confmodule
+
+#echo "postinst '$1' '$2'"
+
+
+db_input high nexa-mqtt/growatt_username || true
+db_input high nexa-mqtt/growatt_password || true
+db_input high nexa-mqtt/mqtt_host || true
+
+db_go || true
+
+OVERRIDE_FILE="/etc/systemd/system/nexa-mqtt.service.d/override.conf"
+
+# Only if not yet existing or empty
+if [ ! -s "$OVERRIDE_FILE" ]; then
+
+    db_get nexa-mqtt/growatt_username
+    GROWATT_USERNAME="$RET"
+
+    db_get nexa-mqtt/growatt_password
+    GROWATT_PASSWORD="$RET"
+
+    db_get nexa-mqtt/mqtt_host
+    MQTT_HOST="$RET"
+
+    # create service override file
+    mkdir -p $(dirname "${OVERRIDE_FILE}")
+    cat <<EOF > "$OVERRIDE_FILE"
+[Service]
+Environment="GROWATT_USERNAME=$GROWATT_USERNAME"
+Environment="GROWATT_PASSWORD=$GROWATT_PASSWORD"
+Environment="MQTT_HOST=$MQTT_HOST"
+EOF
+    echo "Override file created: /etc/systemd/system/nexa-mqtt.service.d/override.conf"
+fi
+
+# Start service
+if [ "$1" = "configure" ]; then
+    systemctl daemon-reload
+    systemctl enable nexa-mqtt.service
+    systemctl restart nexa-mqtt.service
+fi

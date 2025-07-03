@@ -2,7 +2,7 @@ package growatt_app
 
 import (
 	"log/slog"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/pkg/models"
 )
 
 func (g *GrowattAppService) pollStatus(device models.NoahDevicePayload) {
@@ -10,9 +10,7 @@ func (g *GrowattAppService) pollStatus(device models.NoahDevicePayload) {
 		slog.Error("could not get device data", slog.String("error", err.Error()), slog.String("device", device.Serial))
 	} else {
 		payload := devicePayload(data)
-		for _, e := range g.endpoints {
-			e.PublishDeviceStatus(device, payload)
-		}
+		g.endpoint.PublishDeviceStatus(device, payload)
 	}
 }
 
@@ -26,9 +24,7 @@ func (g *GrowattAppService) pollBatteryDetails(device models.NoahDevicePayload) 
 			batteryPayloads = append(batteryPayloads, batteryPayload(&bat))
 		}
 
-		for _, e := range g.endpoints {
-			e.PublishBatteryDetails(device, batteryPayloads)
-		}
+		g.endpoint.PublishBatteryDetails(device, batteryPayloads)
 	}
 }
 
@@ -37,8 +33,6 @@ func (g *GrowattAppService) pollParameterData(device models.NoahDevicePayload) {
 		slog.Error("could not get parameter data", slog.String("error", err.Error()), slog.String("device", device.Serial))
 	} else {
 		payload := parameterPayload(data)
-		for _, e := range g.endpoints {
-			e.PublishParameterData(device, payload)
-		}
+		g.endpoint.PublishParameterData(device, payload)
 	}
 }

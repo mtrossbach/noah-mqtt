@@ -58,6 +58,7 @@ type GrowattNoahList struct {
 		Time5Mode                   string `json:"time5Mode"`
 		Time7Enable                 string `json:"time7Enable"`
 		Soc                         string `json:"soc"`
+		Time3Repeat                 string `json:"time3Repeat"`
 		Time4Start                  string `json:"time4Start"`
 		Time2End                    string `json:"time2End"`
 		ShellyFlag                  string `json:"shellyFlag"`
@@ -74,13 +75,14 @@ type GrowattNoahList struct {
 		Time6Start                  string `json:"time6Start"`
 		Time1Power                  string `json:"time1Power"`
 		Time7Mode                   string `json:"time7Mode"`
+		Time7Repeat                 string `json:"time7Repeat"`
 		Time6Enable                 string `json:"time6Enable"`
 		Time1End                    string `json:"time1End"`
 		ChargingSocHighLimit        string `json:"chargingSocHighLimit"`
 		Time5End                    string `json:"time5End"`
 		Time9Start                  string `json:"time9Start"`
-		DefaultPower                string `json:"defaultPower"`
 		Version                     string `json:"version"`
+		Time4Repeat                 string `json:"time4Repeat"`
 		Time3Power                  string `json:"time3Power"`
 		ChargingSocLowLimit         string `json:"chargingSocLowLimit"`
 		NominalPower                string `json:"nominalPower"`
@@ -92,9 +94,11 @@ type GrowattNoahList struct {
 		GridConnectionControl       string `json:"gridConnectionControl"`
 		Status                      string `json:"status"`
 		LastUpdateTime              string `json:"lastUpdateTime"`
+		Time1Repeat                 string `json:"time1Repeat"`
 		Time2Enable                 string `json:"time2Enable"`
 		WorkMode                    string `json:"workMode"`
 		AccountName                 string `json:"accountName"`
+		ManName                     string `json:"manName"`
 		Timezone                    string `json:"timezone"`
 		AntiBackflowEnable          string `json:"antiBackflowEnable"`
 		Time5Power                  string `json:"time5Power"`
@@ -103,10 +107,12 @@ type GrowattNoahList struct {
 		Time9Mode                   string `json:"time9Mode"`
 		Time4End                    string `json:"time4End"`
 		Time1Start                  string `json:"time1Start"`
+		Time8Repeat                 string `json:"time8Repeat"`
 		Time7End                    string `json:"time7End"`
 		EMonth                      string `json:"eMonth"`
 		Dtc                         string `json:"dtc"`
 		Time1Mode                   string `json:"time1Mode"`
+		Time5Repeat                 string `json:"time5Repeat"`
 		Time9Enable                 string `json:"time9Enable"`
 		Alias                       string `json:"alias"`
 		DatalogSn                   string `json:"datalogSn"`
@@ -115,10 +121,13 @@ type GrowattNoahList struct {
 		Sn                          string `json:"sn"`
 		Time4Power                  string `json:"time4Power"`
 		AntiBackflowPowerPercentage string `json:"antiBackflowPowerPercentage"`
+		AssociatedInvManAndModel    string `json:"associatedInvManAndModel"`
 		Time1Enable                 string `json:"time1Enable"`
 		Address                     string `json:"address"`
+		Time2Repeat                 string `json:"time2Repeat"`
 		DatalogType                 string `json:"datalogType"`
 		PlantID                     string `json:"plantId"`
+		Time9Repeat                 string `json:"time9Repeat"`
 		Time2Mode                   string `json:"time2Mode"`
 		Time3End                    string `json:"time3End"`
 		Time8End                    string `json:"time8End"`
@@ -136,6 +145,8 @@ type GrowattNoahList struct {
 		Time5Start                  string `json:"time5Start"`
 		DefaultACCouplePower        string `json:"defaultACCouplePower"`
 		PlantName                   string `json:"plantName"`
+		ManAddress                  string `json:"manAddress"`
+		Time6Repeat                 string `json:"time6Repeat"`
 		Time8Enable                 string `json:"time8Enable"`
 	} `json:"datas"`
 	NotPager bool `json:"notPager"`
@@ -268,11 +279,21 @@ type GrowattNoahStatus struct {
 	Result int         `json:"result"`
 	Msg    interface{} `json:"msg"`
 	Obj    struct {
+		SmartSocketPower              string `json:"smartSocketPower"`
+		CtSelfPower                   string `json:"ctSelfPower"`
+		GroplugFlag                   string `json:"groplugFlag"`
+		HouseholdLoadApartFromGroplug string `json:"householdLoadApartFromGroplug"`
+		ShellyFlag                    string `json:"shellyFlag"`
+		TotalHouseholdLoad            string `json:"totalHouseholdLoad"`
 		TotalBatteryPackSoc           string `json:"totalBatteryPackSoc"`
 		Pac                           string `json:"pac"`
 		WorkMode                      string `json:"workMode"`
+		EastronFlag                   string `json:"eastronFlag"`
+		BatteryPackageQuantity        string `json:"batteryPackageQuantity"`
 		Ppv                           string `json:"ppv"`
+		GroplugNum                    string `json:"groplugNum"`
 		TotalBatteryPackChargingPower string `json:"totalBatteryPackChargingPower"`
+		OtherPower                    string `json:"otherPower"`
 		Status                        string `json:"status"`
 	} `json:"obj"`
 	Request interface{} `json:"request"`

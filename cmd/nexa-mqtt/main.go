@@ -2,20 +2,21 @@ package main
 
 import (
 	"fmt"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"log/slog"
-	"noah-mqtt/internal/config"
-	"noah-mqtt/internal/endpoint_mqtt"
-	"noah-mqtt/internal/growatt_app"
-	"noah-mqtt/internal/growatt_web"
-	"noah-mqtt/internal/homeassistant"
-	"noah-mqtt/internal/logging"
-	"noah-mqtt/internal/misc"
+	"nexa-mqtt/internal/config"
+	"nexa-mqtt/internal/endpoint_mqtt"
+	"nexa-mqtt/internal/growatt_app"
+	"nexa-mqtt/internal/growatt_web"
+	"nexa-mqtt/internal/homeassistant"
+	"nexa-mqtt/internal/logging"
+	"nexa-mqtt/internal/misc"
 	"os"
 	"os/signal"
 	"os/user"
 	"strings"
 	"syscall"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 var (
@@ -31,15 +32,14 @@ func main() {
 		misc.Panic(err)
 	}
 
-	slog.Info("noah-mqtt started", slog.String("version", version), slog.String("commit", commit))
+	slog.Info("nexa-mqtt started", slog.String("version", version), slog.String("commit", commit))
 
 	if currentUser, err := user.Current(); err == nil {
 		slog.Info("running as", slog.String("username", currentUser.Username), slog.String("uid", currentUser.Uid))
 	}
 
-	connectMqtt(cfg.Mqtt, func(client mqtt.Client) {
-		runApp(cfg, client)
-	})
+	app := NewApp(cfg)
+	connectMqtt(cfg.Mqtt, app)
 
 	cancelChan := make(chan os.Signal, 1)
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
@@ -47,18 +47,55 @@ func main() {
 	slog.Info("Caught signal", slog.Any("signal", sig))
 }
 
-func runApp(cfg config.Config, client mqtt.Client) {
+type App struct {
+	mode           string
+	cfg            config.Config
+	growattService *growatt_web.GrowattService
+	growattApp     *growatt_app.GrowattAppService
+}
+
+func (a *App) onMqttDisconnect() {
+	if a.growattService != nil {
+		a.growattService.StopPolling()
+		a.growattService.SetEndpoint(nil)
+	}
+	if a.growattApp != nil {
+		a.growattApp.StopPolling()
+		a.growattApp.SetEndpoint(nil)
+	}
+}
+
+func (a *App) onMqttConnect(client mqtt.Client) {
 	haService := homeassistant.NewService(homeassistant.Options{
 		MqttClient:  client,
-		TopicPrefix: cfg.HomeAssistant.TopicPrefix,
+		TopicPrefix: a.cfg.HomeAssistant.TopicPrefix,
 		Version:     version,
 	})
 
 	mqttEndpoint := endpoint_mqtt.NewEndpoint(endpoint_mqtt.Options{
 		MqttClient:  client,
-		TopicPrefix: cfg.Mqtt.TopicPrefix,
+		TopicPrefix: a.cfg.Mqtt.TopicPrefix,
 		HaClient:    haService,
 	})
+
+	switch a.mode {
+	case "app":
+		a.growattApp.SetEndpoint(mqttEndpoint)
+		a.growattApp.StartPolling()
+		mqttEndpoint.SetParameterApplier(a.growattApp)
+
+	case "web":
+		a.growattService.SetEndpoint(mqttEndpoint)
+		a.growattService.StartPolling()
+
+	case "web+app":
+		a.growattService.SetEndpoint(mqttEndpoint)
+		a.growattService.StartPolling()
+		mqttEndpoint.SetParameterApplier(a.growattApp)
+	}
+}
+
+func NewApp(cfg config.Config) *App {
 
 	mode := strings.ToLower(strings.TrimSpace(cfg.Growatt.APIMode))
 	switch mode {
@@ -73,12 +110,16 @@ func runApp(cfg config.Config, client mqtt.Client) {
 			ParameterPollingInterval:      cfg.ParameterPollingInterval,
 		})
 
-		growattApp.AddEndpoint(mqttEndpoint)
 		if err := growattApp.Login(); err != nil {
 			slog.Error("could not login to growatt account", slog.String("error", err.Error()))
 			misc.Panic(err)
 		}
-		growattApp.StartPolling()
+		return &App{
+			mode:       mode,
+			cfg:        cfg,
+			growattApp: growattApp,
+		}
+
 	case "web":
 		slog.Info("setting mode", slog.String("mode", mode))
 		growattService := growatt_web.NewGrowattService(growatt_web.Options{
@@ -88,14 +129,17 @@ func runApp(cfg config.Config, client mqtt.Client) {
 			PollingInterval: cfg.PollingInterval,
 		})
 
-		growattService.AddEndpoint(mqttEndpoint)
 		if err := growattService.Login(); err != nil {
 			slog.Error("could not login to growatt account", slog.String("error", err.Error()))
 			misc.Panic(err)
 		}
 
 		slog.Warn("web mode does not support setting parameters")
-		growattService.StartPolling()
+		return &App{
+			mode:           mode,
+			cfg:            cfg,
+			growattService: growattService,
+		}
 
 	case "web+app":
 		slog.Info("setting mode", slog.String("mode", mode))
@@ -106,7 +150,6 @@ func runApp(cfg config.Config, client mqtt.Client) {
 			PollingInterval: cfg.PollingInterval,
 		})
 
-		growattService.AddEndpoint(mqttEndpoint)
 		if err := growattService.Login(); err != nil {
 			slog.Error("could not login to growatt account", slog.String("error", err.Error()))
 			misc.Panic(err)
@@ -121,14 +164,20 @@ func runApp(cfg config.Config, client mqtt.Client) {
 			ParameterPollingInterval:      cfg.ParameterPollingInterval,
 		})
 
-		mqttEndpoint.SetParameterApplier(growattApp)
-		growattService.StartPolling()
+		return &App{
+			mode:           mode,
+			cfg:            cfg,
+			growattService: growattService,
+			growattApp:     growattApp,
+		}
+
 	default:
 		misc.Panic(fmt.Errorf("invalid growatt api type: %s", cfg.Growatt.APIMode))
+		return nil
 	}
 }
 
-func connectMqtt(mqttCfg config.Mqtt, onConnected func(client mqtt.Client)) {
+func connectMqtt(mqttCfg config.Mqtt, app *App) {
 	opts := mqtt.NewClientOptions().
 		AddBroker(fmt.Sprintf("tcp://%s:%d", mqttCfg.Host, mqttCfg.Port)).
 		SetClientID(mqttCfg.ClientId).
@@ -137,12 +186,12 @@ func connectMqtt(mqttCfg config.Mqtt, onConnected func(client mqtt.Client)) {
 
 	opts.OnConnect = func(client mqtt.Client) {
 		slog.Info("connected to mqtt broker")
-		onConnected(client)
+		app.onMqttConnect(client)
 	}
 
 	opts.OnConnectionLost = func(client mqtt.Client, err error) {
-		slog.Error("lost connection to mqtt broker", slog.String("error", err.Error()))
-		misc.Panic(err)
+		slog.Warn("lost connection to mqtt broker", slog.String("error", err.Error()))
+		app.onMqttDisconnect()
 	}
 
 	c := mqtt.NewClient(opts)

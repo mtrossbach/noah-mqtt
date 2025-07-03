@@ -1,6 +1,6 @@
 package endpoint
 
-import "noah-mqtt/pkg/models"
+import "nexa-mqtt/pkg/models"
 
 type Endpoint interface {
 	SetParameterApplier(applier ParameterApplier)

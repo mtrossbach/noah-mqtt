@@ -2,7 +2,7 @@ package homeassistant
 
 import (
 	"fmt"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/pkg/models"
 )
 
 func generateBinarySensorDiscoveryPayload(appVersion string, info DeviceInfo) []BinarySensor {
@@ -11,28 +11,36 @@ func generateBinarySensorDiscoveryPayload(appVersion string, info DeviceInfo) []
 
 	binarySensors := []BinarySensor{
 		{
-			Name:          "Connectivity",
-			Icon:          "",
-			DeviceClass:   DeviceClassConnectivity,
-			ValueTemplate: fmt.Sprintf("{{ 'offline' if value_json.status == '%s' else 'online' }}", models.Offline),
-			PayloadOff:    "offline",
-			PayloadOn:     "online",
-			UniqueId:      fmt.Sprintf("%s_connectivity", info.SerialNumber),
-			StateTopic:    info.StateTopic,
-			Device:        device,
-			Origin:        origin,
+			CommonConfig: CommonConfig{
+				Name:        "Connectivity",
+				UniqueId:    fmt.Sprintf("%s_connectivity", info.SerialNumber),
+				Icon:        "",
+				DeviceClass: DeviceClassConnectivity,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: fmt.Sprintf("{{ 'offline' if value_json.status == '%s' else 'online' }}", models.Offline),
+			},
+			PayloadOff: "offline",
+			PayloadOn:  "online",
 		},
 		{
-			Name:          "Heating",
-			Icon:          IconHeatWave,
-			DeviceClass:   DeviceClassNone,
-			ValueTemplate: fmt.Sprintf("{{ 'heating' if value_json.status == '%s' else 'not-heating' }}", models.Heating),
-			PayloadOff:    "not-heating",
-			PayloadOn:     "heating",
-			UniqueId:      fmt.Sprintf("%s_heating", info.SerialNumber),
-			StateTopic:    info.StateTopic,
-			Device:        device,
-			Origin:        origin,
+			CommonConfig: CommonConfig{
+				Name:        "Heating",
+				UniqueId:    fmt.Sprintf("%s_heating", info.SerialNumber),
+				Icon:        IconHeatWave,
+				DeviceClass: DeviceClassNone,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: fmt.Sprintf("{{ 'heating' if value_json.status == '%s' else 'not-heating' }}", models.Heating),
+			},
+			PayloadOff: "not-heating",
+			PayloadOn:  "heating",
 		},
 	}
 

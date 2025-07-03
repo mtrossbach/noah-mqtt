@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+#echo "postrm '$1' '$2'"
+
+if [ "$1" = "purge" ]; then
+    systemctl disable nexa-mqtt || true
+fi

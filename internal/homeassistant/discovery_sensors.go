@@ -1,6 +1,9 @@
 package homeassistant
 
-import "fmt"
+import (
+	"fmt"
+	"nexa-mqtt/pkg/models"
+)
 
 func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor {
 	device := generateDevice(info)
@@ -8,120 +11,196 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 
 	sensors := []Sensor{
 		{
-			Name:              "Output Power",
-			DeviceClass:       DeviceClassPower,
+			CommonConfig: CommonConfig{
+				Name:        "Output Power",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "output_power"),
+				DeviceClass: DeviceClassPower,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.output_w }}",
+			},
 			StateClass:        StateClassMeasurement,
-			StateTopic:        info.StateTopic,
 			UnitOfMeasurement: UnitWatt,
-			ValueTemplate:     "{{ value_json.output_w }}",
-			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "output_power"),
-			Device:            device,
-			Origin:            origin,
 		},
 		{
-			Name:              "Solar Power",
-			Icon:              IconSolarPower,
-			DeviceClass:       DeviceClassPower,
+			CommonConfig: CommonConfig{
+				Name:        "Solar Power",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "solar_power"),
+				Icon:        IconSolarPower,
+				DeviceClass: DeviceClassPower,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.solar_w }}",
+			},
 			StateClass:        StateClassMeasurement,
-			StateTopic:        info.StateTopic,
 			UnitOfMeasurement: UnitWatt,
-			ValueTemplate:     "{{ value_json.solar_w }}",
-			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "solar_power"),
-			Device:            device,
-			Origin:            origin,
 		},
 		{
-			Name:              "Charging Power",
-			Icon:              IconBatteryPlus,
-			DeviceClass:       DeviceClassPower,
+			CommonConfig: CommonConfig{
+				Name:        "Charging Power",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "charging_power"),
+				Icon:        IconBatteryPlus,
+				DeviceClass: DeviceClassPower,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.charge_w }}",
+			},
 			StateClass:        StateClassMeasurement,
-			StateTopic:        info.StateTopic,
 			UnitOfMeasurement: UnitWatt,
-			ValueTemplate:     "{{ value_json.charge_w }}",
-			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "charging_power"),
-			Device:            device,
-			Origin:            origin,
 		},
 		{
-			Name:              "Discharge Power",
-			Icon:              IconBatteryMinus,
-			DeviceClass:       DeviceClassPower,
+			CommonConfig: CommonConfig{
+				Name:        "Discharge Power",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "discharge_power"),
+				Icon:        IconBatteryMinus,
+				DeviceClass: DeviceClassPower,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.discharge_w }}",
+			},
 			StateClass:        StateClassMeasurement,
-			StateTopic:        info.StateTopic,
 			UnitOfMeasurement: UnitWatt,
-			ValueTemplate:     "{{ value_json.discharge_w }}",
-			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "discharge_power"),
-			Device:            device,
-			Origin:            origin,
 		},
 		{
-			Name:              "Generation Total",
-			DeviceClass:       DeviceClassEnergy,
+			CommonConfig: CommonConfig{
+				Name:        "Generation Total",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "generation_total"),
+				DeviceClass: DeviceClassEnergy,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.generation_total_kwh }}",
+			},
 			StateClass:        StateClassTotalIncreasing,
-			StateTopic:        info.StateTopic,
 			UnitOfMeasurement: UnitKilowattHours,
-			ValueTemplate:     "{{ value_json.generation_total_kwh }}",
-			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "generation_total"),
-			Device:            device,
-			Origin:            origin,
 		},
 		{
-			Name:              "Generation Today",
-			DeviceClass:       DeviceClassEnergy,
+			CommonConfig: CommonConfig{
+				Name:        "Generation Today",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "generation_today"),
+				DeviceClass: DeviceClassEnergy,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.generation_today_kwh }}",
+			},
 			StateClass:        StateClassTotalIncreasing,
-			StateTopic:        info.StateTopic,
 			UnitOfMeasurement: UnitKilowattHours,
-			ValueTemplate:     "{{ value_json.generation_today_kwh }}",
-			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "generation_today"),
-			Device:            device,
-			Origin:            origin,
 		},
 		{
-			Name:              "SoC",
-			DeviceClass:       DeviceClassBattery,
+			CommonConfig: CommonConfig{
+				Name:        "SoC",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "soc"),
+				DeviceClass: DeviceClassBattery,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.soc }}",
+			},
 			StateClass:        StateClassMeasurement,
-			StateTopic:        info.StateTopic,
 			UnitOfMeasurement: UnitPercent,
-			ValueTemplate:     "{{ value_json.soc }}",
-			UniqueId:          fmt.Sprintf("%s_%s", info.SerialNumber, "soc"),
-			Device:            device,
-			Origin:            origin,
 		},
 		{
-			Name:          "Number Of Batteries",
-			StateClass:    StateClassMeasurement,
-			StateTopic:    info.StateTopic,
-			Icon:          IconCarBattery,
-			ValueTemplate: "{{ value_json.battery_num }}",
-			UniqueId:      fmt.Sprintf("%s_%s", info.SerialNumber, "battery_num"),
-			Device:        device,
-			Origin:        origin,
+			CommonConfig: CommonConfig{
+				Name:     "Number Of Batteries",
+				UniqueId: fmt.Sprintf("%s_%s", info.SerialNumber, "battery_num"),
+				Icon:     IconCarBattery,
+				Device:   device,
+				Origin:   origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.battery_num }}",
+			},
+			StateClass: StateClassMeasurement,
+		},
+		{
+			CommonConfig: CommonConfig{
+				Name:        "Working Mode",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "work_mode"),
+				DeviceClass: DeviceClassEnum,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.work_mode }}",
+			},
+			Options: []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst},
+		},
+		{
+			CommonConfig: CommonConfig{
+				Name:        "Status",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "status"),
+				DeviceClass: DeviceClassEnum,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.StateTopic,
+				ValueTemplate: "{{ value_json.status }}",
+			},
+			Options: []string{
+				models.Offline,
+				models.WorkModeLoadFirst,
+				models.WorkModeBatteryFirst,
+				models.SmartSelfUse,
+				models.Fault,
+				models.Heating,
+				models.OnGrid,
+				models.OffGrid},
 		},
 	}
 
 	for _, b := range info.Batteries {
 		sensors = append(sensors, []Sensor{
 			{
-				Name:              fmt.Sprintf("%s SoC", b.Alias),
-				DeviceClass:       DeviceClassBattery,
+				CommonConfig: CommonConfig{
+					Name:        fmt.Sprintf("%s SoC", b.Alias),
+					UniqueId:    fmt.Sprintf("%s_%s_%s", info.SerialNumber, b.Alias, "soc"),
+					DeviceClass: DeviceClassBattery,
+					Device:      device,
+					Origin:      origin,
+				},
+				StateConfig: StateConfig{
+					StateTopic:    b.StateTopic,
+					ValueTemplate: "{{ value_json.soc }}",
+				},
 				StateClass:        StateClassMeasurement,
-				StateTopic:        b.StateTopic,
 				UnitOfMeasurement: UnitPercent,
-				ValueTemplate:     "{{ value_json.soc }}",
-				UniqueId:          fmt.Sprintf("%s_%s_%s", info.SerialNumber, b.Alias, "soc"),
-				Device:            device,
-				Origin:            origin,
 			},
 			{
-				Name:              fmt.Sprintf("%s Temperature", b.Alias),
-				DeviceClass:       DeviceClassTemperature,
+				CommonConfig: CommonConfig{
+					Name:        fmt.Sprintf("%s Temperature", b.Alias),
+					UniqueId:    fmt.Sprintf("%s_%s_%s", info.SerialNumber, b.Alias, "temp"),
+					DeviceClass: DeviceClassTemperature,
+					Device:      device,
+					Origin:      origin,
+				},
+				StateConfig: StateConfig{
+					StateTopic:    b.StateTopic,
+					ValueTemplate: "{{ value_json.temp }}",
+				},
 				StateClass:        StateClassMeasurement,
-				StateTopic:        b.StateTopic,
 				UnitOfMeasurement: UnitCelsius,
-				ValueTemplate:     "{{ value_json.temp }}",
-				UniqueId:          fmt.Sprintf("%s_%s_%s", info.SerialNumber, b.Alias, "temp"),
-				Device:            device,
-				Origin:            origin,
 			},
 		}...)
 	}

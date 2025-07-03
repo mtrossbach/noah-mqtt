@@ -1,0 +1,14 @@
+Template: nexa-mqtt/growatt_username
+Type: string
+Default: none
+Description: Enter openapi.growatt.com user name
+
+Template: nexa-mqtt/growatt_password
+Type: password
+Default: secret
+Description: Enter openapi.growatt.com user password
+
+Template: nexa-mqtt/mqtt_host
+Type: string
+Default: localhost
+Description: Enter hostname of MQTT broker

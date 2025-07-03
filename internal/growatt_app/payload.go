@@ -1,8 +1,8 @@
 package growatt_app
 
 import (
-	"noah-mqtt/internal/misc"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/internal/misc"
+	"nexa-mqtt/pkg/models"
 )
 
 func devicePayload(n *NoahStatus) models.DevicePayload {
@@ -28,14 +28,16 @@ func batteryPayload(n *BatteryDetails) models.BatteryPayload {
 	}
 }
 
-func parameterPayload(n *NoahInfo) models.ParameterPayload {
+func parameterPayload(n *NexaInfo) models.ParameterPayload {
 	chargingLimit := misc.ParseFloat(n.Obj.Noah.ChargingSocHighLimit)
 	dischargeLimit := misc.ParseFloat(n.Obj.Noah.ChargingSocLowLimit)
-	outputPower := misc.ParseFloat(n.Obj.Noah.DefaultPower)
+	defaultACCouplePower := misc.ParseFloat(n.Obj.Noah.DefaultACCouplePower)
+	defaultMode := models.WorkModeFromString(n.Obj.Noah.DefaultMode)
 
 	return models.ParameterPayload{
-		ChargingLimit:  &chargingLimit,
-		DischargeLimit: &dischargeLimit,
-		OutputPower:    &outputPower,
+		ChargingLimit:        &chargingLimit,
+		DischargeLimit:       &dischargeLimit,
+		DefaultACCouplePower: &defaultACCouplePower,
+		DefaultMode:          &defaultMode,
 	}
 }

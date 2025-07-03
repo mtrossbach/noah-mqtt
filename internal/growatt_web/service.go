@@ -3,9 +3,9 @@ package growatt_web
 import (
 	"fmt"
 	"log/slog"
-	"noah-mqtt/internal/endpoint"
-	"noah-mqtt/internal/misc"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/internal/endpoint"
+	"nexa-mqtt/internal/misc"
+	"nexa-mqtt/pkg/models"
 	"time"
 )
 
@@ -16,16 +16,18 @@ type Options struct {
 	PollingInterval time.Duration
 }
 type GrowattService struct {
-	opts      Options
-	client    *Client
-	devices   []models.NoahDevicePayload
-	endpoints []endpoint.Endpoint
+	opts     Options
+	client   *Client
+	devices  []models.NoahDevicePayload
+	endpoint endpoint.Endpoint
+	stop     chan bool
 }
 
 func NewGrowattService(options Options) *GrowattService {
 	return &GrowattService{
 		opts:   options,
 		client: newClient(options.ServerUrl, options.Username, options.Password),
+		stop:   make(chan bool),
 	}
 }
 
@@ -39,15 +41,17 @@ func (g *GrowattService) Login() error {
 
 func (g *GrowattService) StartPolling() {
 	g.devices = g.enumerateDevices()
-	for _, e := range g.endpoints {
-		e.SetDevices(g.devices)
-	}
+	g.endpoint.SetDevices(g.devices)
 
 	go g.poll()
 }
 
-func (g *GrowattService) AddEndpoint(e endpoint.Endpoint) {
-	g.endpoints = append(g.endpoints, e)
+func (g *GrowattService) StopPolling() {
+	g.stop <- true
+}
+
+func (g *GrowattService) SetEndpoint(e endpoint.Endpoint) {
+	g.endpoint = e
 }
 
 func (g *GrowattService) enumerateDevices() []models.NoahDevicePayload {
@@ -69,7 +73,7 @@ func (g *GrowattService) enumerateDevices() []models.NoahDevicePayload {
 					slog.Error("could not get device history", slog.String("device", dev.Sn), slog.String("error", err.Error()))
 				} else {
 					if len(history.Obj.Datas) == 0 {
-						slog.Error("could not get device history, data empty", slog.String("device", dev.Sn))
+						slog.Info("could not get device history, data empty", slog.String("device", dev.Sn))
 					} else {
 						var batCount = history.Obj.Datas[0].BatteryPackageQuantity
 						var batteries []models.NoahDeviceBatteryPayload
@@ -105,23 +109,32 @@ func (g *GrowattService) poll() {
 		slog.Int("interval", int(g.opts.PollingInterval/time.Second)),
 		slog.Int("history-interval", int(historyInterval/time.Second)))
 
-	go func() {
-		for {
+	tickerPolling := time.NewTicker(g.opts.PollingInterval)
+	defer tickerPolling.Stop()
+	tickerHistory := time.NewTicker(historyInterval)
+	defer tickerHistory.Stop()
+
+	for _, device := range g.devices {
+		g.pollStatus(device)
+		g.pollHistory(device)
+	}
+
+	for {
+		select {
+		case <-tickerPolling.C:
 			for _, device := range g.devices {
 				g.pollStatus(device)
 			}
-			<-time.After(g.opts.PollingInterval)
-		}
-	}()
 
-	go func() {
-		for {
+		case <-tickerHistory.C:
 			for _, device := range g.devices {
 				g.pollHistory(device)
 			}
-			<-time.After(historyInterval)
+		case <-g.stop:
+			slog.Info("stop polling growatt (web)")
+			return
 		}
-	}()
+	}
 }
 
 func (g *GrowattService) pollStatus(device models.NoahDevicePayload) {
@@ -154,10 +167,7 @@ func (g *GrowattService) pollStatus(device models.NoahDevicePayload) {
 				Status:                models.StatusFromString(status.Obj.Status),
 			}
 
-			for _, e := range g.endpoints {
-				e.PublishDeviceStatus(device, payload)
-			}
-
+			g.endpoint.PublishDeviceStatus(device, payload)
 		}
 	}
 }
@@ -172,16 +182,16 @@ func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
 			detailsData := details.Datas[0]
 			cl := misc.ParseFloat(detailsData.ChargingSocHighLimit)
 			dl := misc.ParseFloat(detailsData.ChargingSocLowLimit)
-			op := misc.ParseFloat(detailsData.DefaultPower)
+			op := misc.ParseFloat(detailsData.DefaultACCouplePower)
+			mode := models.WorkModeFromString(detailsData.DefaultMode)
 			paramPayload := models.ParameterPayload{
-				ChargingLimit:  &cl,
-				DischargeLimit: &dl,
-				OutputPower:    &op,
+				ChargingLimit:        &cl,
+				DischargeLimit:       &dl,
+				DefaultACCouplePower: &op,
+				DefaultMode:          &mode,
 			}
 
-			for _, e := range g.endpoints {
-				e.PublishParameterData(device, paramPayload)
-			}
+			g.endpoint.PublishParameterData(device, paramPayload)
 		}
 	}
 
@@ -189,7 +199,7 @@ func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
 		slog.Error("could not get device history", slog.String("error", err.Error()), slog.String("device", device.Serial))
 	} else {
 		if len(history.Obj.Datas) == 0 {
-			slog.Error("could not get device history, data empty", slog.String("device", device.Serial))
+			slog.Info("could not get device history, data empty", slog.String("device", device.Serial))
 		} else {
 			historyData := history.Obj.Datas[0]
 
@@ -223,9 +233,7 @@ func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
 				}
 			}
 
-			for _, e := range g.endpoints {
-				e.PublishBatteryDetails(device, batteries)
-			}
+			g.endpoint.PublishBatteryDetails(device, batteries)
 		}
 	}
 }

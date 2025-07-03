@@ -1,0 +1,13 @@
+[Unit]
+Description=Growatt NEXA 2000 MQTT
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/nexa-mqtt
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nexa-mqtt
+
+[Install]
+WantedBy=multi-user.target

@@ -22,4 +22,8 @@ go.work
 go.work.sum
 .idea
 dist
-/noah-mqtt
+/nexa-mqtt
+
+build/
+tmp/
+cmd/nexa-mqtt/__debug_bin*
